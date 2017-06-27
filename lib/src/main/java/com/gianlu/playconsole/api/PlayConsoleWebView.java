@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,7 +30,6 @@ import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
 import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie;
-import cz.msebera.android.httpclient.protocol.BasicHttpContext;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PlayConsoleWebView extends WebView {
@@ -39,6 +39,7 @@ public class PlayConsoleWebView extends WebView {
     private final Handler handler;
     private ISessionAuthenticator listener;
     private CustomWebClient webClient;
+    private boolean authenticating = false;
 
     public PlayConsoleWebView(Context context) {
         super(context);
@@ -53,6 +54,14 @@ public class PlayConsoleWebView extends WebView {
     public PlayConsoleWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         handler = new Handler(context.getMainLooper());
+    }
+
+    private static Map<String, String> filterImportantHeaders(Map<String, String> headers) {
+        Map<String, String> importantHeaders = new HashMap<>();
+        importantHeaders.putAll(headers);
+        // importantHeaders.put("X-GWT-Module-Base", headers.get("X-GWT-Module-Base"));
+        // importantHeaders.put("X-GWT-Permutation", headers.get("X-GWT-Permutation"));
+        return importantHeaders;
     }
 
     public void askForSessionAuthenticator(ISessionAuthenticator listener) {
@@ -88,9 +97,8 @@ public class PlayConsoleWebView extends WebView {
         HttpGet get = new HttpGet(DEVELOPER_CONSOLE_URL + "?dev_acc=" + dev_acc);
 
         HttpClient client = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).build();
-        BasicHttpContext context = new BasicHttpContext();
 
-        HttpResponse resp = client.execute(get, context);
+        HttpResponse resp = client.execute(get, PlayConsoleRequester.httpContext);
         StatusLine sl = resp.getStatusLine();
         if (sl.getStatusCode() != 200) throw new GeneralException(sl);
 
@@ -103,8 +111,6 @@ public class PlayConsoleWebView extends WebView {
             throw new GeneralException("Cannot find startupData!");
         }
     }
-
-    private boolean authenticating = false;
 
     private void authenticate(final String dev_acc, final Map<String, String> headers, final CookieStore cookieStore) {
         new Thread(new Runnable() {
@@ -139,16 +145,6 @@ public class PlayConsoleWebView extends WebView {
         void onFailedAuthenticating(Exception ex);
     }
 
-    public static class GeneralException extends Exception {
-        public GeneralException(StatusLine sl) {
-            super(sl.getStatusCode() + ": " + sl.getReasonPhrase());
-        }
-
-        public GeneralException(String message) {
-            super(message);
-        }
-    }
-
     private class CustomWebClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -158,14 +154,14 @@ public class PlayConsoleWebView extends WebView {
         @Override
         @Nullable
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            if (authenticating) return null;
+            if (authenticating) return null; // Avoid multiple calls to #authenticate()
 
             String url = request.getUrl().toString();
             Matcher matcher = FLOW_END_URL_PATTERN.matcher(url);
             if (matcher.find()) {
-                // Then the flow is ended
+                // The flow is ended
                 String dev_acc = matcher.group(1);
-                Map<String, String> headers = request.getRequestHeaders(); // TODO: Not all headers are important!
+                Map<String, String> headers = filterImportantHeaders(request.getRequestHeaders());
                 CookieStore cookieStore = extractCookies(request.getUrl());
 
                 handler.post(new Runnable() {

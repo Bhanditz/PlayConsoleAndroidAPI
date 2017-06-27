@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Play Console Android API demo</string>
+    <string name="authenticatedSuccessfully">Authenticated successfully!</string>
+    <string name="test">Test</string>
+    <string name="testingFor">Testing for %s</string>
+    <string name="testUrl">Test URL</string>
+    <string name="postRequestBody">Request body (POST)</string>
+    <string name="sendRequest">Send request</string>
 </resources>
