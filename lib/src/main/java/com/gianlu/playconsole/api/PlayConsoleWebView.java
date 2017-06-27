@@ -58,9 +58,9 @@ public class PlayConsoleWebView extends WebView {
 
     private static Map<String, String> filterImportantHeaders(Map<String, String> headers) {
         Map<String, String> importantHeaders = new HashMap<>();
-        importantHeaders.putAll(headers);
-        // importantHeaders.put("X-GWT-Module-Base", headers.get("X-GWT-Module-Base"));
-        // importantHeaders.put("X-GWT-Permutation", headers.get("X-GWT-Permutation"));
+        importantHeaders.put("X-GWT-Module-Base", headers.get("X-GWT-Module-Base"));
+        importantHeaders.put("X-GWT-Permutation", headers.get("X-GWT-Permutation"));
+        importantHeaders.put("Content-Type", headers.get("Content-Type"));
         return importantHeaders;
     }
 
