@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import com.gianlu.playconsole.api.Exceptions.NetworkException;
 import com.gianlu.playconsole.api.Exceptions.PlayConsoleException;
 import com.gianlu.playconsole.api.Models.AndroidApp;
+import com.gianlu.playconsole.api.Models.AppVersionsHistory;
 import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
 import com.gianlu.playconsole.api.Models.SessionInfo;
 
@@ -152,6 +153,67 @@ public class PlayConsole {
         listDetailedAndroidApps(Collections.singletonList(packageName), new IResult<List<DetailedAndroidApp>>() {
             @Override
             public void onResult(List<DetailedAndroidApp> result) {
+                listener.onResult(result.get(0));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                listener.onException(ex);
+            }
+        });
+    }
+
+    /**
+     * Retrieves a list of {@link DetailedAndroidApp} specified by their package name
+     *
+     * @param packageNames package names of the {@link DetailedAndroidApp} to retrieve
+     * @param listener     handles the request
+     */
+    public void listAppVersionsHistories(List<String> packageNames, @NonNull final IResult<List<AppVersionsHistory>> listener) {
+        try {
+            JSONObject params = new JSONObject().put("1", Utils.toJSONArray(packageNames)).put("3", 4);
+            androidapps(Method.FETCH, params, new IJSONObject() {
+                @Override
+                public void onResponse(JSONObject resp) throws JSONException {
+                    final List<AppVersionsHistory> apps = AppVersionsHistory.toAppVersionsHistoriesList(resp.getJSONObject("result").getJSONArray("1"));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onResult(apps);
+                        }
+                    });
+                }
+
+                @Override
+                public void onException(final Exception ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            });
+        } catch (final JSONException ex) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onException(ex);
+                }
+            });
+        }
+    }
+
+    /**
+     * Retrieves a {@link AppVersionsHistory} specified by its package name
+     *
+     * @param packageName package name of the {@link AppVersionsHistory} to retrieve
+     * @param listener    handles the request
+     */
+    public void fetchAppVersionsHistory(String packageName, @NonNull final IResult<AppVersionsHistory> listener) {
+        listAppVersionsHistories(Collections.singletonList(packageName), new IResult<List<AppVersionsHistory>>() {
+            @Override
+            public void onResult(List<AppVersionsHistory> result) {
                 listener.onResult(result.get(0));
             }
 
