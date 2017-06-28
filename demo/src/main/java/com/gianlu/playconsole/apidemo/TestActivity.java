@@ -11,7 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gianlu.playconsole.api.Models.SessionInfo;
-import com.gianlu.playconsole.api.NetworkException;
+import com.gianlu.playconsole.api.Exceptions.NetworkException;
 import com.gianlu.playconsole.api.PlayConsoleRequest;
 import com.gianlu.playconsole.api.PlayConsoleRequester;
 

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 
+import com.gianlu.playconsole.api.Exceptions.HtmlParsingException;
+import com.gianlu.playconsole.api.Exceptions.NetworkException;
+import com.gianlu.playconsole.api.Exceptions.NotAuthenticatedException;
 import com.gianlu.playconsole.api.Models.SessionInfo;
 import com.gianlu.playconsole.api.Models.StartupData;
 

@@ -1,4 +1,4 @@
-package com.gianlu.playconsole.api;
+package com.gianlu.playconsole.api.Exceptions;
 
 import cz.msebera.android.httpclient.StatusLine;
 

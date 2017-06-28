@@ -3,11 +3,14 @@ package com.gianlu.playconsole.api;
 import android.net.Uri;
 import android.webkit.CookieManager;
 
+import com.gianlu.playconsole.api.Exceptions.HtmlParsingException;
 import com.gianlu.playconsole.api.Models.StartupData;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,5 +60,11 @@ public class Utils {
         }
 
         return store;
+    }
+
+    public static JSONArray toJSONArray(List<?> list) {
+        JSONArray array = new JSONArray();
+        for (Object obj : list) array.put(obj);
+        return array;
     }
 }

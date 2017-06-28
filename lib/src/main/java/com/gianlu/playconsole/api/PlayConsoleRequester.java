@@ -2,6 +2,7 @@ package com.gianlu.playconsole.api;
 
 import android.support.annotation.NonNull;
 
+import com.gianlu.playconsole.api.Exceptions.NetworkException;
 import com.gianlu.playconsole.api.Models.SessionInfo;
 
 import org.json.JSONException;
@@ -26,7 +27,7 @@ public class PlayConsoleRequester {
     private static PlayConsoleRequester instance;
     private final HttpContext httpContext;
     private final HttpClient client;
-    private final SessionInfo info;
+    final SessionInfo info;
 
     private PlayConsoleRequester(SessionInfo info) {
         this.client = setupHttpClient(info);
