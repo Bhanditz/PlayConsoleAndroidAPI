@@ -7,10 +7,12 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.gianlu.playconsole.api.PlayConsoleWebView;
 import com.gianlu.playconsole.api.Models.SessionInfo;
+import com.gianlu.playconsole.api.PlayConsoleAuthenticator;
+import com.gianlu.playconsole.api.PlayConsoleWebView;
+import com.gianlu.playconsole.api.Prefs;
 
-public class MainActivity extends AppCompatActivity implements PlayConsoleWebView.ISessionAuthenticator {
+public class MainActivity extends AppCompatActivity implements PlayConsoleAuthenticator.IWebViewAuth, PlayConsoleAuthenticator.ISilentAuth {
     private PlayConsoleWebView webView;
     private ProgressBar loading;
     private View success;
@@ -22,11 +24,12 @@ public class MainActivity extends AppCompatActivity implements PlayConsoleWebVie
         setContentView(R.layout.activity_main);
 
         webView = (PlayConsoleWebView) findViewById(R.id.main_webView);
-        webView.askForSessionAuthenticator(this);
-
         loading = (ProgressBar) findViewById(R.id.main_loading);
         success = findViewById(R.id.main_success);
         test = (Button) findViewById(R.id.main_test);
+
+        // PlayConsoleAuthenticator.authenticateWithWebView(webView, this);
+        PlayConsoleAuthenticator.authenticateSilently(this, this);
     }
 
     @Override
@@ -41,12 +44,28 @@ public class MainActivity extends AppCompatActivity implements PlayConsoleWebVie
                 TestActivity.startActivity(MainActivity.this, auth);
             }
         });
+
+        Prefs.putString(this, Prefs.Keys.LAST_DEV_ACC, auth.startupData.account.accountCode);
+    }
+
+    @Override
+    public void notAuthenticated() {
+        webView.setVisibility(View.VISIBLE);
+        loading.setVisibility(View.GONE);
+
+        PlayConsoleAuthenticator.authenticateWithWebView(webView, this);
     }
 
     @Override
     public void userAttentionNoMoreRequired() {
         webView.setVisibility(View.GONE);
         loading.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void userAttentionRequired() {
+        webView.setVisibility(View.VISIBLE);
+        loading.setVisibility(View.GONE);
     }
 
     @Override

@@ -16,6 +16,7 @@ import cz.msebera.android.httpclient.impl.client.BasicCookieStore;
 import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie;
 
 public class Utils {
+    public static final String DEVELOPER_CONSOLE_URL = "https://play.google.com/apps/publish/";
     private static final Pattern GWT_MODULE_BASE_PATTERN = Pattern.compile("<meta name=\"gwt:property\" content=\"baseUrl=(.*?)\">");
     private static final Pattern STARTUP_DATA_PATTERN = Pattern.compile("startupData = (\\{.*?\\});");
 
@@ -23,6 +24,10 @@ public class Utils {
         Matcher matcher = GWT_MODULE_BASE_PATTERN.matcher(html);
         if (matcher.find()) return matcher.group(1);
         else throw new HtmlParsingException("Cannot find GWT module base!");
+    }
+
+    public static String buildConsoleUrl(String dev_acc) {
+        return DEVELOPER_CONSOLE_URL + "?dev_acc" + dev_acc;
     }
 
     public static StartupData extractStartupData(String html) throws HtmlParsingException, JSONException {
@@ -40,6 +45,7 @@ public class Utils {
     public static CookieStore extractCookies(Uri url) {
         String rawCookies = CookieManager.getInstance().getCookie(url.toString());
         CookieStore store = new BasicCookieStore();
+        if (rawCookies == null || rawCookies.isEmpty()) return store;
 
         for (String rawCookie : rawCookies.split(";")) {
             String[] split = rawCookie.split("=");

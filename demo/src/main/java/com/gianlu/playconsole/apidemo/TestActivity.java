@@ -21,9 +21,9 @@ import java.io.IOException;
 
 public class TestActivity extends AppCompatActivity {
 
-    public static void startActivity(Context context, SessionInfo auth) {
+    public static void startActivity(Context context, SessionInfo info) {
         context.startActivity(new Intent(context, TestActivity.class)
-                .putExtra("authenticator", auth));
+                .putExtra("sessionInfo", info));
     }
 
     @Override
@@ -31,16 +31,16 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
 
-        final SessionInfo authenticator = (SessionInfo) getIntent().getSerializableExtra("authenticator");
-        if (authenticator == null) {
+        final SessionInfo info = (SessionInfo) getIntent().getSerializableExtra("sessionInfo");
+        if (info == null) {
             onBackPressed();
             return;
         }
 
-        setTitle(getString(R.string.testingFor, authenticator.startupData.account.accountCode));
+        setTitle(getString(R.string.testingFor, info.startupData.account.accountCode));
 
         final EditText url = (EditText) findViewById(R.id.test_url);
-        url.setText("https://play.google.com/apps/publish/androidapps?dev_acc=" + authenticator.startupData.account.accountCode);
+        url.setText("https://play.google.com/apps/publish/androidapps?dev_acc=" + info.startupData.account.accountCode);
         final EditText body = (EditText) findViewById(R.id.test_body);
         body.setText("{\"method\":\"fetch\",\"params\":\"{\\\"2\\\":1,\\\"3\\\":7}\"}");
         final TextView response = (TextView) findViewById(R.id.test_response);
@@ -53,7 +53,7 @@ public class TestActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            final JSONObject resp = PlayConsoleRequester.doRequestSync(url.getText().toString(), new JSONObject(body.getText().toString()), authenticator);
+                            final JSONObject resp = PlayConsoleRequester.get(info).execute(url.getText().toString(), new JSONObject(body.getText().toString()));
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {

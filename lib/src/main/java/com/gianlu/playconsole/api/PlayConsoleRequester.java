@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.StatusLine;
+import cz.msebera.android.httpclient.client.HttpClient;
+import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
 import cz.msebera.android.httpclient.entity.ByteArrayEntity;
@@ -20,20 +22,34 @@ import cz.msebera.android.httpclient.protocol.HttpContext;
 import cz.msebera.android.httpclient.util.EntityUtils;
 
 public class PlayConsoleRequester {
-    public static final HttpContext httpContext = new BasicHttpContext();
+    private static PlayConsoleRequester instance;
+    private final HttpContext httpContext;
+    private final HttpClient client;
+    private final SessionInfo info;
 
-    public static CloseableHttpClient setupHttpClient(SessionInfo authenticator) {
-        return HttpClientBuilder.create().setDefaultCookieStore(authenticator.cookieStore).build();
+    private PlayConsoleRequester(SessionInfo info) {
+        this.client = setupHttpClient(info);
+        this.httpContext = new BasicHttpContext();
+        this.info = info;
     }
 
-    public static JSONObject doRequestSync(String url, JSONObject request, SessionInfo authenticator) throws JSONException, IOException, NetworkException {
+    public static PlayConsoleRequester get(SessionInfo info) {
+        if (instance == null) instance = new PlayConsoleRequester(info);
+        return instance;
+    }
+
+    public static CloseableHttpClient setupHttpClient(SessionInfo info) {
+        return HttpClientBuilder.create().setDefaultCookieStore(info.cookieStore).build();
+    }
+
+    public JSONObject execute(String url, JSONObject request) throws JSONException, IOException, NetworkException {
         HttpPost post = new HttpPost(url);
-        authenticateRequest(authenticator, post);
-        setRequestXsrf(request, authenticator);
-        return doRequestSync(setupHttpClient(authenticator), post, request);
+        authenticateRequest(post);
+        setRequestXsrf(request);
+        return execute(post, request);
     }
 
-    public static JSONObject doRequestSync(CloseableHttpClient client, HttpPost request, JSONObject payload) throws IOException, NetworkException, JSONException {
+    public JSONObject execute(HttpPost request, JSONObject payload) throws IOException, NetworkException, JSONException {
         request.setEntity(new ByteArrayEntity(payload.toString().getBytes()));
 
         HttpResponse resp = client.execute(request, httpContext);
@@ -43,13 +59,17 @@ public class PlayConsoleRequester {
         return new JSONObject(EntityUtils.toString(resp.getEntity(), Charset.forName("UTF-8")));
     }
 
-    public static void setRequestXsrf(JSONObject request, SessionInfo authenticator) throws JSONException {
-        request.put("xsrf", authenticator.startupData.xsrfToken);
+    private void setRequestXsrf(JSONObject request) throws JSONException {
+        request.put("xsrf", info.startupData.xsrfToken);
     }
 
-    public static void authenticateRequest(SessionInfo authenticator, HttpRequestBase request) {
-        request.addHeader("X-Gwt-Module-Base", authenticator.xGwtModuleBase);
-        request.addHeader("X-Gwt-Permutation", authenticator.xGwtPermutation);
+    private void authenticateRequest(HttpRequestBase request) {
+        request.addHeader("X-Gwt-Module-Base", info.xGwtModuleBase);
+        request.addHeader("X-Gwt-Permutation", info.xGwtPermutation);
         request.addHeader("Content-Type", SessionInfo.contentType);
+    }
+
+    public HttpResponse execute(HttpGet get) throws IOException {
+        return client.execute(get, httpContext);
     }
 }
