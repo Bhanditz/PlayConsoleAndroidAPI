@@ -10,9 +10,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gianlu.playconsole.api.GeneralException;
+import com.gianlu.playconsole.api.NetworkException;
 import com.gianlu.playconsole.api.PlayConsoleRequester;
-import com.gianlu.playconsole.api.SessionAuthenticator;
+import com.gianlu.playconsole.api.Models.SessionInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,7 +21,7 @@ import java.io.IOException;
 
 public class TestActivity extends AppCompatActivity {
 
-    public static void startActivity(Context context, SessionAuthenticator auth) {
+    public static void startActivity(Context context, SessionInfo auth) {
         context.startActivity(new Intent(context, TestActivity.class)
                 .putExtra("authenticator", auth));
     }
@@ -31,16 +31,16 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
 
-        final SessionAuthenticator authenticator = (SessionAuthenticator) getIntent().getSerializableExtra("authenticator");
+        final SessionInfo authenticator = (SessionInfo) getIntent().getSerializableExtra("authenticator");
         if (authenticator == null) {
             onBackPressed();
             return;
         }
 
-        setTitle(getString(R.string.testingFor, authenticator.dev_acc));
+        setTitle(getString(R.string.testingFor, authenticator.startupData.account.accountCode));
 
         final EditText url = (EditText) findViewById(R.id.test_url);
-        url.setText("https://play.google.com/apps/publish/androidapps?dev_acc=" + authenticator.dev_acc);
+        url.setText("https://play.google.com/apps/publish/androidapps?dev_acc=" + authenticator.startupData.account.accountCode);
         final EditText body = (EditText) findViewById(R.id.test_body);
         body.setText("{\"method\":\"fetch\",\"params\":\"{\\\"2\\\":1,\\\"3\\\":7}\"}");
         final TextView response = (TextView) findViewById(R.id.test_response);
@@ -61,7 +61,7 @@ public class TestActivity extends AppCompatActivity {
                                 }
                             });
                             System.out.println("RESP: " + resp);
-                        } catch (JSONException | IOException | GeneralException ex) {
+                        } catch (JSONException | IOException | NetworkException ex) {
                             if (BuildConfig.DEBUG) ex.printStackTrace();
                             runOnUiThread(new Runnable() {
                                 @Override

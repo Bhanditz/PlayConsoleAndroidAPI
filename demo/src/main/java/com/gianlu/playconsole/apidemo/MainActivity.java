@@ -8,7 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.gianlu.playconsole.api.PlayConsoleWebView;
-import com.gianlu.playconsole.api.SessionAuthenticator;
+import com.gianlu.playconsole.api.Models.SessionInfo;
 
 public class MainActivity extends AppCompatActivity implements PlayConsoleWebView.ISessionAuthenticator {
     private PlayConsoleWebView webView;
@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements PlayConsoleWebVie
     }
 
     @Override
-    public void onAuthenticated(final SessionAuthenticator auth) {
+    public void onAuthenticated(final SessionInfo auth) {
         webView.setVisibility(View.GONE);
         loading.setVisibility(View.GONE);
         success.setVisibility(View.VISIBLE);
