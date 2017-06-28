@@ -1,5 +1,7 @@
 package com.gianlu.playconsole.api;
 
+import android.support.annotation.NonNull;
+
 import com.gianlu.playconsole.api.Models.SessionInfo;
 
 import org.json.JSONException;
@@ -32,8 +34,10 @@ public class PlayConsoleRequester {
         this.info = info;
     }
 
+    @NonNull
     public static PlayConsoleRequester get(SessionInfo info) {
-        if (instance == null) instance = new PlayConsoleRequester(info);
+        if (instance == null || !instance.info.equals(info))
+            instance = new PlayConsoleRequester(info);
         return instance;
     }
 
@@ -49,8 +53,6 @@ public class PlayConsoleRequester {
         setPayloadXsrf(payload);
         request.setEntity(new ByteArrayEntity(payload.toString().getBytes()));
         authenticateRequest(request);
-
-        System.out.println(payload.toString());
 
         HttpResponse resp = client.execute(request, httpContext);
         StatusLine sl = resp.getStatusLine();

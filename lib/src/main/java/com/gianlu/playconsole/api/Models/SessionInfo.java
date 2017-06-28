@@ -18,4 +18,14 @@ public class SessionInfo implements Serializable {
         this.xGwtPermutation = xGwtPermutation;
         this.cookieStore = cookieStore;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SessionInfo that = (SessionInfo) o;
+        return startupData.equals(that.startupData)
+                && xGwtModuleBase.equals(that.xGwtModuleBase)
+                && xGwtPermutation.equals(that.xGwtPermutation);
+    }
 }

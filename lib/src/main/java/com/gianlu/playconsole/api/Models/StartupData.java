@@ -14,6 +14,14 @@ public class StartupData implements Serializable {
         account = new DeveloperAccount(new JSONObject(startupData.getString("DeveloperConsoleAccounts")).getJSONArray("1").getJSONObject(0));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StartupData that = (StartupData) o;
+        return xsrfToken.equals(that.xsrfToken) && account.equals(that.account);
+    }
+
     public class DeveloperAccount implements Serializable {
         public final String accountCode;
         public final String accountName;
@@ -25,6 +33,14 @@ public class StartupData implements Serializable {
             accountName = account.getString("2");
             email = account.getString("3");
             imageUrl = account.getString("4");
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DeveloperAccount that = (DeveloperAccount) o;
+            return accountCode.equals(that.accountCode) && email.equals(that.email);
         }
     }
 }
