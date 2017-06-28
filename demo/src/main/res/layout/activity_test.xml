@@ -13,11 +13,19 @@
         android:inputType="textUri" />
 
     <EditText
-        android:id="@+id/test_body"
+        android:id="@+id/test_method"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:hint="@string/postRequestBody"
+        android:hint="@string/requestMethod_hint"
+        android:inputType="textNoSuggestions" />
+
+    <EditText
+        android:id="@+id/test_params"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:hint="@string/requestParams_hint"
         android:inputType="textNoSuggestions" />
 
     <Button

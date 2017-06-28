@@ -11,7 +11,6 @@ import java.nio.charset.Charset;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.StatusLine;
 import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.client.methods.HttpRequestBase;
 import cz.msebera.android.httpclient.entity.ByteArrayEntity;
@@ -42,15 +41,16 @@ public class PlayConsoleRequester {
         return HttpClientBuilder.create().setDefaultCookieStore(info.cookieStore).build();
     }
 
-    public JSONObject execute(String url, JSONObject request) throws JSONException, IOException, NetworkException {
-        HttpPost post = new HttpPost(url);
-        authenticateRequest(post);
-        setRequestXsrf(request);
-        return execute(post, request);
+    public JSONObject execute(PlayConsoleRequest request) throws JSONException, NetworkException, IOException {
+        return execute(request.request, request.body);
     }
 
-    public JSONObject execute(HttpPost request, JSONObject payload) throws IOException, NetworkException, JSONException {
+    private JSONObject execute(HttpPost request, JSONObject payload) throws IOException, NetworkException, JSONException {
+        setPayloadXsrf(payload);
         request.setEntity(new ByteArrayEntity(payload.toString().getBytes()));
+        authenticateRequest(request);
+
+        System.out.println(payload.toString());
 
         HttpResponse resp = client.execute(request, httpContext);
         StatusLine sl = resp.getStatusLine();
@@ -59,7 +59,7 @@ public class PlayConsoleRequester {
         return new JSONObject(EntityUtils.toString(resp.getEntity(), Charset.forName("UTF-8")));
     }
 
-    private void setRequestXsrf(JSONObject request) throws JSONException {
+    private void setPayloadXsrf(JSONObject request) throws JSONException {
         request.put("xsrf", info.startupData.xsrfToken);
     }
 
@@ -67,9 +67,5 @@ public class PlayConsoleRequester {
         request.addHeader("X-Gwt-Module-Base", info.xGwtModuleBase);
         request.addHeader("X-Gwt-Permutation", info.xGwtPermutation);
         request.addHeader("Content-Type", SessionInfo.contentType);
-    }
-
-    public HttpResponse execute(HttpGet get) throws IOException {
-        return client.execute(get, httpContext);
     }
 }

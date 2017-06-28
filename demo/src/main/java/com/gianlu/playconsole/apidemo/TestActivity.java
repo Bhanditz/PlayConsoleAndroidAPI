@@ -10,9 +10,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gianlu.playconsole.api.NetworkException;
-import com.gianlu.playconsole.api.PlayConsoleRequester;
 import com.gianlu.playconsole.api.Models.SessionInfo;
+import com.gianlu.playconsole.api.NetworkException;
+import com.gianlu.playconsole.api.PlayConsoleRequest;
+import com.gianlu.playconsole.api.PlayConsoleRequester;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,26 +42,32 @@ public class TestActivity extends AppCompatActivity {
 
         final EditText url = (EditText) findViewById(R.id.test_url);
         url.setText("https://play.google.com/apps/publish/androidapps?dev_acc=" + info.startupData.account.accountCode);
-        final EditText body = (EditText) findViewById(R.id.test_body);
-        body.setText("{\"method\":\"fetch\",\"params\":\"{\\\"2\\\":1,\\\"3\\\":7}\"}");
+        final EditText method = (EditText) findViewById(R.id.test_method);
+        method.setText("fetch");
+        final EditText params = (EditText) findViewById(R.id.test_params);
+        params.setText("{\"2\":1,\"3\":7}");
         final TextView response = (TextView) findViewById(R.id.test_response);
 
         Button send = (Button) findViewById(R.id.test_send);
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final PlayConsoleRequest.Builder builder = new PlayConsoleRequest.Builder();
+                builder.setUrl(url.getText().toString())
+                        .setRequestMethod(method.getText().toString())
+                        .setRequestParams(params.getText().toString());
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            final JSONObject resp = PlayConsoleRequester.get(info).execute(url.getText().toString(), new JSONObject(body.getText().toString()));
+                            final JSONObject resp = PlayConsoleRequester.get(info).execute(builder.build());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     response.setText(resp.toString());
                                 }
                             });
-                            System.out.println("RESP: " + resp);
                         } catch (JSONException | IOException | NetworkException ex) {
                             if (BuildConfig.DEBUG) ex.printStackTrace();
                             runOnUiThread(new Runnable() {

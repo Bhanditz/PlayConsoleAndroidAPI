@@ -6,4 +6,6 @@
     <string name="testUrl">Test URL</string>
     <string name="postRequestBody">Request body (POST)</string>
     <string name="sendRequest">Send request</string>
+    <string name="requestMethod_hint">Reuqest method</string>
+    <string name="requestParams_hint">Request params</string>
 </resources>
