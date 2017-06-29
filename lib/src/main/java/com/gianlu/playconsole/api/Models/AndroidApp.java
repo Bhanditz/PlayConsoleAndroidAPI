@@ -1,5 +1,10 @@
 package com.gianlu.playconsole.api.Models;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+import com.gianlu.playconsole.api.R;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +32,18 @@ public class AndroidApp {
         iconUrl = evenMoreInfo.getString("3");
     }
 
+    /**
+     * Copies another {@link AndroidApp} (deep copy not required)
+     * @param app the copied {@link AndroidApp}
+     */
+    public AndroidApp(AndroidApp app) {
+        packageName = app.packageName;
+        name = app.name;
+        status = app.status;
+        iconUrl = app.iconUrl;
+        lastStoreDetailsUpdate = app.lastStoreDetailsUpdate;
+    }
+
     public static List<AndroidApp> toAndroidAppsList(JSONArray array) throws JSONException {
         List<AndroidApp> apps = new ArrayList<>();
         for (int i = 0; i < array.length(); i++)
@@ -35,10 +52,11 @@ public class AndroidApp {
         return apps;
     }
 
+    // The order of these element is important for sorting
     public enum Status {
         PUBLISHED,
-        NOT_PUBLISHED,
-        DRAFT;
+        DRAFT,
+        NOT_PUBLISHED;
 
         private static Status parseCode(int code) {
             switch (code) {
@@ -49,6 +67,25 @@ public class AndroidApp {
                     return NOT_PUBLISHED;
                 case 5:
                     return DRAFT;
+            }
+        }
+
+        /**
+         * Returns a formal representation of the {@link Status}
+         * @param context a {@link Context}
+         * @return a formal representation of the {@link Status}
+         */
+        @NonNull
+        public String getFormal(@NonNull Context context) {
+            switch (this) {
+                case PUBLISHED:
+                    return context.getString(R.string.published);
+                case NOT_PUBLISHED:
+                    return context.getString(R.string.notPublished);
+                case DRAFT:
+                    return context.getString(R.string.draft);
+                default:
+                    return context.getString(R.string.unknown);
             }
         }
     }

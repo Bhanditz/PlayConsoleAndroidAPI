@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unknown">Unknown</string>
+    <string name="draft">Draft</string>
+    <string name="notPublished">Not published</string>
+    <string name="published">Published</string>
+</resources>
