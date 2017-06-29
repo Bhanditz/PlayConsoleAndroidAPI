@@ -9,11 +9,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 // TODO: Missing 1->17, 6->7, 4, (1->2)
-public class AndroidApp {
+public class AndroidApp implements Serializable {
     public final String packageName;
     public final String name;
     public final Status status;

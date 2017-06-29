@@ -4,12 +4,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppVersionsHistory {
+public class AppVersionsHistory implements Serializable {
     public final String packageName;
-    public final List<Version> versions;
+    public final ArrayList<Version> versions;
 
     public AppVersionsHistory(JSONObject _obj) throws JSONException {
         JSONObject obj = _obj.getJSONObject("1");
@@ -30,7 +31,7 @@ public class AppVersionsHistory {
     }
 
     // TODO: Missing 3, 5, 6, 10, 12, 16, 2->22, 2->23, 2->26, 2->27, 2->28, 2->32, 2->35, 2->36, 2->37, 2->38, 2->39
-    public class Version {
+    public class Version implements Serializable {
         public final int versionCode;
         public final String versionName;
         public final String[] supportedLanguages;

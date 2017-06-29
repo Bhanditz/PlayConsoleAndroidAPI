@@ -4,11 +4,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 // TODO: Missing 3->4, 6->8
-public class DetailedAndroidApp extends AndroidApp {
+public class DetailedAndroidApp extends AndroidApp implements Serializable {
     public final long lastApkUpdate;
     public final long published;
     public final long totalRatings;
