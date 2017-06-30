@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class RatingStats extends BaseStats<RatingStats.Day> implements Serializable {
 
@@ -16,7 +17,8 @@ public class RatingStats extends BaseStats<RatingStats.Day> implements Serializa
         super(obj);
 
         JSONArray daysArray = obj.getJSONArray("1");
-        SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()); // TODO: Should get Locale as param 3
+        SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        parser.setTimeZone(TimeZone.getTimeZone(obj.getString("3")));
         for (int i = 0; i < daysArray.length(); i++)
             items.add(new RatingStats.Day(daysArray.getJSONObject(i), parser));
     }
