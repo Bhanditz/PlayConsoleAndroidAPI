@@ -4,4 +4,13 @@
     <string name="draft">Draft</string>
     <string name="notPublished">Not published</string>
     <string name="published">Published</string>
+    <string name="installs">Installs</string>
+    <string name="uninstalls">Uninstalls</string>
+    <string name="ratingsNum">Ratings number</string>
+    <string name="averageRating">Average rating</string>
+    <string name="activeInstalls">Active installs</string>
+    <string name="crashes">Crashes</string>
+    <string name="date">Dae</string>
+    <string name="country">Country</string>
+    <string name="sdkVersion">Android SDK version</string>
 </resources>

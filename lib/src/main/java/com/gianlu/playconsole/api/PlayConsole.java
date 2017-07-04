@@ -300,7 +300,7 @@ public class PlayConsole {
                         .put("3", Days.daysBetween(today, new DateTime(interval.second)).getDays());
             }
 
-            if (builder.dimension != null) actualParams.put("7", builder.dimension.val);
+            if (builder.dimension != null) actualParams.put("7", new JSONArray().put(builder.dimension.val));
 
             List<Metric> metricsList = builder.metrics;
             if (!metricsList.isEmpty()) {
@@ -414,6 +414,25 @@ public class PlayConsole {
         Metric(int val) {
             this.val = val;
         }
+
+        public String getFormal(Context context) {
+            switch (this) {
+                case INSTALLS:
+                    return context.getString(R.string.installs);
+                case UNINSTALLS:
+                    return context.getString(R.string.uninstalls);
+                case RATINGS_NUM:
+                    return context.getString(R.string.ratingsNum);
+                case AVERAGE_RATING:
+                    return context.getString(R.string.averageRating);
+                case ACTIVE_INSTALLS:
+                    return context.getString(R.string.activeInstalls);
+                case CRASHES:
+                    return context.getString(R.string.crashes);
+                default:
+                    return context.getString(R.string.unknown);
+            }
+        }
     }
 
     @SuppressWarnings("unused")
@@ -437,6 +456,19 @@ public class PlayConsole {
 
         Dimension(int val) {
             this.val = val;
+        }
+
+        public String getFormal(Context context) {
+            switch (this) {
+                case DATE:
+                    return context.getString(R.string.date);
+                case COUNTRY:
+                    return context.getString(R.string.country);
+                case SDK_VERSION:
+                    return context.getString(R.string.sdkVersion);
+                default:
+                    return context.getString(R.string.unknown);
+            }
         }
     }
 
@@ -535,7 +567,7 @@ public class PlayConsole {
          * @param dimension the dimension
          * @return this
          */
-        public StatsRequestBuilder setDimensions(Dimension dimension) {
+        public StatsRequestBuilder setDimension(Dimension dimension) {
             this.dimension = dimension;
             return this;
         }
