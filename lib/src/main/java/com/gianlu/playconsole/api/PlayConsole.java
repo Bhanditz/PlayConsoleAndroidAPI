@@ -358,7 +358,7 @@ public class PlayConsole {
         LAST_30_DAYS,
         LAST_60_DAYS;
 
-        Pair<Long, Long> getAsTimestamps() {
+        public Pair<Long, Long> getAsTimestamps() {
             switch (this) {
                 default:
                 case LAST_7_DAYS:
@@ -433,6 +433,16 @@ public class PlayConsole {
                     return context.getString(R.string.unknown);
             }
         }
+
+        public static String[] formalValues(Context context) {
+            Metric[] values = values();
+            String[] formalValues = new String[values.length];
+
+            for (int i = 0; i < values.length; i++)
+                formalValues[i] = values[i].getFormal(context);
+
+            return formalValues;
+        }
     }
 
     @SuppressWarnings("unused")
@@ -469,6 +479,16 @@ public class PlayConsole {
                 default:
                     return context.getString(R.string.unknown);
             }
+        }
+
+        public static String[] formalValues(Context context) {
+            Dimension[] values = values();
+            String[] formalValues = new String[values.length];
+
+            for (int i = 0; i < values.length; i++)
+                formalValues[i] = values[i].getFormal(context);
+
+            return formalValues;
         }
     }
 

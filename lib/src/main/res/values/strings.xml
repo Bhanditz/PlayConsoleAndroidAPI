@@ -10,7 +10,7 @@
     <string name="averageRating">Average rating</string>
     <string name="activeInstalls">Active installs</string>
     <string name="crashes">Crashes</string>
-    <string name="date">Dae</string>
+    <string name="date">Date</string>
     <string name="country">Country</string>
     <string name="sdkVersion">Android SDK version</string>
 </resources>
