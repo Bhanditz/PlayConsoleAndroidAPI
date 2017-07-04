@@ -10,12 +10,9 @@ import com.gianlu.playconsole.api.Exceptions.PlayConsoleException;
 import com.gianlu.playconsole.api.Models.AndroidApp;
 import com.gianlu.playconsole.api.Models.Annotation;
 import com.gianlu.playconsole.api.Models.AppVersionsHistory;
-import com.gianlu.playconsole.api.Models.CountriesStats;
-import com.gianlu.playconsole.api.Models.CrashesStats;
 import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
-import com.gianlu.playconsole.api.Models.InstallsStats;
-import com.gianlu.playconsole.api.Models.RatingStats;
 import com.gianlu.playconsole.api.Models.SessionInfo;
+import com.gianlu.playconsole.api.Models.Stats;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -26,8 +23,11 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -236,355 +236,6 @@ public class PlayConsole {
     }
 
     /**
-     * Retrieves a {@link InstallsStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link InstallsStats} to retrieve
-     * @param interval    a {@link TimeInterval}
-     * @param listener    handles the request
-     */
-    public void fetchInstallsStats(String packageName, TimeInterval interval, @NonNull final IResult<InstallsStats> listener) {
-        Pair<Long, Long> timestamps = interval.getAsTimestamps();
-        fetchInstallsStats(packageName, timestamps.first, timestamps.second, listener);
-    }
-
-    /**
-     * Retrieves a {@link InstallsStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link InstallsStats} to retrieve
-     * @param start       interval start (in millis)
-     * @param end         interval end (in millis)
-     * @param listener    handles the request
-     */
-    public void fetchInstallsStats(String packageName, long start, long end, @NonNull final IResult<InstallsStats> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", packageName)
-                    .put("2", 1); // TODO: What's this?
-
-            // Interval
-            DateTime today = new DateTime();
-            actualParams.put("2", Days.daysBetween(today, new DateTime(start)).getDays())
-                    .put("3", Days.daysBetween(today, new DateTime(end)).getDays());
-
-            // Dimensions
-            actualParams.put("7", new JSONArray().put(17))
-                    .put("8", new JSONArray().put(10).put(11));
-
-            actualParams.put("12", 0).put("15", 1); // TODO: What's this?
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final InstallsStats stats = new InstallsStats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(stats);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves a {@link CountriesStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link CountriesStats} to retrieve
-     * @param interval    a {@link TimeInterval}
-     * @param listener    handles the request
-     */
-    public void fetchCountriesStats(String packageName, TimeInterval interval, @NonNull final IResult<CountriesStats> listener) {
-        Pair<Long, Long> timestamps = interval.getAsTimestamps();
-        fetchCountriesStats(packageName, timestamps.first, timestamps.second, listener);
-    }
-
-    /**
-     * Retrieves a {@link CountriesStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link CountriesStats} to retrieve
-     * @param start       interval start (in millis)
-     * @param end         interval end (in millis)
-     * @param listener    handles the request
-     */
-    public void fetchCountriesStats(String packageName, long start, long end, @NonNull final IResult<CountriesStats> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", packageName)
-                    .put("2", 1); // TODO: What's this?
-
-            // Interval
-            DateTime today = new DateTime();
-            actualParams.put("2", Days.daysBetween(today, new DateTime(start)).getDays())
-                    .put("3", Days.daysBetween(today, new DateTime(end)).getDays());
-
-            // Dimensions
-            actualParams.put("7", new JSONArray().put(3))
-                    .put("8", new JSONArray().put(10));
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final CountriesStats stats = new CountriesStats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(stats);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves a {@link RatingStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link RatingStats} to retrieve
-     * @param interval    a {@link TimeInterval}
-     * @param listener    handles the request
-     */
-    public void fetchRatingsStats(String packageName, TimeInterval interval, @NonNull final IResult<RatingStats> listener) {
-        Pair<Long, Long> timestamps = interval.getAsTimestamps();
-        fetchRatingsStats(packageName, timestamps.first, timestamps.second, listener);
-    }
-
-    /**
-     * Retrieves a {@link RatingStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link RatingStats} to retrieve
-     * @param start       interval start (in millis)
-     * @param end         interval end (in millis)
-     * @param listener    handles the request
-     */
-    public void fetchRatingsStats(String packageName, long start, long end, @NonNull final IResult<RatingStats> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", packageName)
-                    .put("2", 1); // TODO: What's this?
-
-            // Interval
-            DateTime today = new DateTime();
-            actualParams.put("2", Days.daysBetween(today, new DateTime(start)).getDays())
-                    .put("3", Days.daysBetween(today, new DateTime(end)).getDays());
-
-            // Dimensions
-            actualParams.put("7", new JSONArray().put(17))
-                    .put("8", new JSONArray().put(71).put(15));
-
-            actualParams.put("12", 0).put("15", 1); // TODO: What's this?
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final RatingStats stats = new RatingStats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(stats);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves a {@link CrashesStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link CrashesStats} to retrieve
-     * @param interval    a {@link TimeInterval}
-     * @param listener    handles the request
-     */
-    public void fetchCrashesStats(String packageName, TimeInterval interval, @NonNull final IResult<CrashesStats> listener) {
-        Pair<Long, Long> timestamps = interval.getAsTimestamps();
-        fetchCrashesStats(packageName, timestamps.first, timestamps.second, listener);
-    }
-
-    /**
-     * Retrieves a {@link CrashesStats} specified by the package name and the time interval
-     *
-     * @param packageName package name of the {@link CrashesStats} to retrieve
-     * @param start       interval start (in millis)
-     * @param end         interval end (in millis)
-     * @param listener    handles the request
-     */
-    public void fetchCrashesStats(String packageName, long start, long end, @NonNull final IResult<CrashesStats> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", packageName)
-                    .put("2", 1); // TODO: What's this?
-
-            // Interval
-            DateTime today = new DateTime();
-            actualParams.put("2", Days.daysBetween(today, new DateTime(start)).getDays())
-                    .put("3", Days.daysBetween(today, new DateTime(end)).getDays());
-
-            // Dimensions
-            actualParams.put("7", new JSONArray().put(17))
-                    .put("8", new JSONArray().put(96));
-
-            actualParams.put("12", 0).put("15", 1); // TODO: What's this?
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final CrashesStats stats = new CrashesStats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(stats);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves the number of active installs on the app specified by its package name
-     *
-     * @param packageName package name of the {@link Long} to retrieve
-     * @param listener    handles the request
-     */
-    public void fetchActiveInstallsNum(String packageName, @NonNull final IResult<Long> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", packageName)
-                    .put("2", 1); // TODO: What's this?
-
-            // Interval
-            actualParams.put("2", -1).put("3", -1);
-
-            // Dimensions
-            actualParams.put("8", new JSONArray().put(81));
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final Long num = resp.getJSONObject("result").getJSONArray("1").getJSONObject(0).getJSONArray("1").getJSONObject(0).getJSONArray("2").getJSONObject(0).getLong("1"); // Insane
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(num);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
      * Retrieves a list of {@link Annotation} specified by the package name
      *
      * @param packageName package name of the list of {@link Annotation} to retrieve
@@ -603,6 +254,77 @@ public class PlayConsole {
                         @Override
                         public void run() {
                             listener.onResult(annotations);
+                        }
+                    });
+                }
+
+                @Override
+                public void onException(final Exception ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            });
+        } catch (final JSONException ex) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onException(ex);
+                }
+            });
+        }
+    }
+
+    /**
+     * Fetches stats
+     *
+     * @param builder  see {@link StatsRequestBuilder}
+     * @param listener handles the request
+     */
+    public void fetchStats(StatsRequestBuilder builder, @NonNull final IResult<Stats> listener) {
+        try {
+            JSONObject params = new JSONObject();
+            JSONObject actualParams = new JSONObject();
+            JSONObject appInfo = new JSONObject();
+            appInfo.put("1", builder.packageName).put("2", 1);
+
+            Pair<Long, Long> interval = builder.interval;
+            if (interval == null) {
+                actualParams.put("2", -1).put("3", -1);
+            } else {
+                DateTime today = new DateTime();
+                actualParams.put("2", Days.daysBetween(today, new DateTime(interval.first)).getDays())
+                        .put("3", Days.daysBetween(today, new DateTime(interval.second)).getDays());
+            }
+
+            if (builder.dimension != null) actualParams.put("7", builder.dimension.val);
+
+            List<Metric> metricsList = builder.metrics;
+            if (!metricsList.isEmpty()) {
+                JSONArray metricsArray = new JSONArray();
+                for (Metric metric : metricsList) metricsArray.put(metric.val);
+                actualParams.put("8", metricsArray);
+            }
+
+            if (builder.additionalParams != null) {
+                for (Map.Entry<String, Object> entry : builder.additionalParams.entrySet())
+                    actualParams.put(entry.getKey(), entry.getValue());
+            }
+
+            actualParams.put("1", appInfo);
+            params.put("1", new JSONArray().put(actualParams));
+
+            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
+                @Override
+                public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                    final Stats stats = new Stats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onResult(stats);
                         }
                     });
                 }
@@ -655,7 +377,70 @@ public class PlayConsole {
         }
     }
 
-    // Not all endpoints work with all methods
+    @SuppressWarnings("unused")
+    public enum Metric {
+        /**
+         * Number of installs per day. Requires an interval and a dimension
+         */
+        INSTALLS(10),
+
+        /**
+         * Number of uninstalls per day. Requires an interval and a dimension
+         */
+        UNINSTALLS(11),
+
+        /**
+         * Number of ratings per day. Requires an interval and a dimension
+         */
+        RATINGS_NUM(71),
+
+        /**
+         * Average rating per day. Requires an interval and a dimension
+         */
+        AVERAGE_RATING(15),
+
+        /**
+         * Number of active installs. Doesn't require neither an interval or a dimension
+         */
+        ACTIVE_INSTALLS(81),
+
+        /**
+         * Number of crashes per day. Requires an interval and a dimension
+         */
+        CRASHES(96);
+
+        private final int val;
+
+        Metric(int val) {
+            this.val = val;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public enum Dimension {
+        /**
+         * Date in yyyyMMdd format
+         */
+        DATE(17),
+
+        /**
+         * Country as both country code and country name
+         */
+        COUNTRY(3),
+
+        /**
+         * Device Android SDK version as both API code and Android version
+         */
+        SDK_VERSION(1);
+
+        private final int val;
+
+        Dimension(int val) {
+            this.val = val;
+        }
+    }
+
+    @SuppressWarnings("unused")
     public enum Endpoint {
         STATISTICS("statistics"),
         ANDROIDAPPS("androidapps");
@@ -666,7 +451,7 @@ public class PlayConsole {
         }
     }
 
-    // Not all methods work with all endpoints
+    @SuppressWarnings("unused")
     public enum Method {
         FETCH("fetch"),
         FETCH_STATS("fetchStats"),
@@ -689,5 +474,93 @@ public class PlayConsole {
         void onResult(E result);
 
         void onException(Exception ex);
+    }
+
+    /**
+     * Creates a request to pass in {@link #fetchStats(StatsRequestBuilder, IResult)}
+     */
+    public static class StatsRequestBuilder {
+        private final String packageName;
+        private final List<Metric> metrics;
+        private Dimension dimension;
+        private Pair<Long, Long> interval;
+        private Map<String, Object> additionalParams;
+
+        /**
+         * Default constructor
+         *
+         * @param packageName the package name of the app
+         */
+        public StatsRequestBuilder(String packageName) {
+            this.packageName = packageName;
+            this.metrics = new ArrayList<>();
+        }
+
+        /**
+         * Time interval for the request.
+         *
+         * @param interval time interval
+         * @return this
+         */
+        public StatsRequestBuilder setInterval(TimeInterval interval) {
+            this.interval = interval.getAsTimestamps();
+            return this;
+        }
+
+        /**
+         * See {@link Metric}
+         *
+         * @param metrics some metrics
+         * @return this
+         */
+        public StatsRequestBuilder addMetrics(Metric... metrics) {
+            addMetrics(Arrays.asList(metrics));
+            return this;
+        }
+
+        /**
+         * See {@link Metric}
+         *
+         * @param metrics some metrics
+         * @return this
+         */
+        public StatsRequestBuilder addMetrics(List<Metric> metrics) {
+            this.metrics.addAll(metrics);
+            return this;
+        }
+
+        /**
+         * See {@link Dimension}
+         *
+         * @param dimension the dimension
+         * @return this
+         */
+        public StatsRequestBuilder setDimensions(Dimension dimension) {
+            this.dimension = dimension;
+            return this;
+        }
+
+        /**
+         * Time interval for the request. Must be {@param start} < {@param end}.
+         *
+         * @param start period start in millis
+         * @param end   period end in millis
+         * @return this
+         */
+        public StatsRequestBuilder setInterval(long start, long end) {
+            this.interval = new Pair<>(start, end);
+            return this;
+        }
+
+        /**
+         * Required in some requests, pay attention.
+         *
+         * @param additionalParams Map of keys and values like a JSONObject
+         * @return this
+         */
+        public StatsRequestBuilder setAdditionalParams(Map<String, Object> additionalParams) {
+            this.additionalParams = additionalParams;
+            return this;
+        }
     }
 }
