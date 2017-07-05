@@ -419,7 +419,7 @@ public class PlayConsole {
         /**
          * The revenue that your app generates each day. This is based on estimated sales and includes any tax or other fees.
          */
-        REVENUE(17),
+        REVENUE(17, Dimension.SDK_VERSION, Dimension.LANGUAGE, Dimension.APPLICATION_VERSION, Dimension.CARRIER),
 
         /**
          * The number of unique users who buy one or more items in your app.
