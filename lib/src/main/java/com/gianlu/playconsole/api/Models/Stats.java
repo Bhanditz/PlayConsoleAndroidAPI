@@ -18,7 +18,8 @@ public class Stats {
         timezone = TimeZone.getTimeZone(obj.getString("3"));
 
         entries = new ArrayList<>();
-        JSONArray entriesArray = obj.getJSONArray("1");
+        JSONArray entriesArray = obj.optJSONArray("1");
+        if (entriesArray == null) return; // There are no entries, it's not an error!
         for (int i = 0; i < entriesArray.length(); i++)
             entries.add(new Entry(entriesArray.getJSONObject(i)));
     }

@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -300,14 +301,10 @@ public class PlayConsole {
                         .put("3", Days.daysBetween(today, new DateTime(interval.second)).getDays());
             }
 
-            if (builder.dimension != null) actualParams.put("7", new JSONArray().put(builder.dimension.val));
-
-            List<Metric> metricsList = builder.metrics;
-            if (!metricsList.isEmpty()) {
-                JSONArray metricsArray = new JSONArray();
-                for (Metric metric : metricsList) metricsArray.put(metric.val);
-                actualParams.put("8", metricsArray);
-            }
+            if (builder.dimension != null)
+                actualParams.put("7", new JSONArray().put(builder.dimension.val));
+            if (builder.metric != null)
+                actualParams.put("8", new JSONArray().put(builder.metric.val));
 
             if (builder.additionalParams != null) {
                 for (Map.Entry<String, Object> entry : builder.additionalParams.entrySet())
@@ -380,39 +377,55 @@ public class PlayConsole {
     @SuppressWarnings("unused")
     public enum Metric {
         /**
-         * Number of installs per day. Requires an interval and a dimension
+         * Number of installs per day
          */
         INSTALLS(10),
 
         /**
-         * Number of uninstalls per day. Requires an interval and a dimension
+         * Number of uninstalls per day
          */
         UNINSTALLS(11),
 
         /**
-         * Number of ratings per day. Requires an interval and a dimension
+         * Number of ratings per day
          */
         RATINGS_NUM(71),
 
         /**
-         * Average rating per day. Requires an interval and a dimension
+         * Average rating per day
          */
         AVERAGE_RATING(15),
 
         /**
-         * Number of active installs. Doesn't require neither an interval or a dimension
+         * Number of active installs registered every day
          */
-        ACTIVE_INSTALLS(81),
+        ACTIVE_INSTALLS(81, Dimension.SDK_VERSION, Dimension.COUNTRY),
 
         /**
-         * Number of crashes per day. Requires an interval and a dimension
+         * Number of crashes per day
          */
-        CRASHES(96);
+        CRASHES(96, Dimension.SDK_VERSION, Dimension.COUNTRY);
 
         private final int val;
+        private final Dimension[] unsupportedDimensions;
 
-        Metric(int val) {
+        Metric(int val, Dimension... unsupportedDimensions) {
             this.val = val;
+            this.unsupportedDimensions = unsupportedDimensions;
+        }
+
+        public static String[] formalValues(Context context) {
+            Metric[] values = values();
+            String[] formalValues = new String[values.length];
+
+            for (int i = 0; i < values.length; i++)
+                formalValues[i] = values[i].getFormal(context);
+
+            return formalValues;
+        }
+
+        public List<Dimension> unsupportedDimensions() {
+            return new ArrayList<>(Arrays.asList(unsupportedDimensions));
         }
 
         public String getFormal(Context context) {
@@ -434,14 +447,8 @@ public class PlayConsole {
             }
         }
 
-        public static String[] formalValues(Context context) {
-            Metric[] values = values();
-            String[] formalValues = new String[values.length];
-
-            for (int i = 0; i < values.length; i++)
-                formalValues[i] = values[i].getFormal(context);
-
-            return formalValues;
+        public boolean supportsNoDimension() {
+            return this == ACTIVE_INSTALLS;
         }
     }
 
@@ -468,6 +475,19 @@ public class PlayConsole {
             this.val = val;
         }
 
+        public static List<Dimension> listValues() {
+            return new ArrayList<>(Arrays.asList(values()));
+        }
+
+        public static String[] formalValues(Context context, List<Dimension> dimensions) {
+            String[] formalValues = new String[dimensions.size()];
+
+            for (int i = 0; i < dimensions.size(); i++)
+                formalValues[i] = dimensions.get(i).getFormal(context);
+
+            return formalValues;
+        }
+
         public String getFormal(Context context) {
             switch (this) {
                 case DATE:
@@ -479,16 +499,6 @@ public class PlayConsole {
                 default:
                     return context.getString(R.string.unknown);
             }
-        }
-
-        public static String[] formalValues(Context context) {
-            Dimension[] values = values();
-            String[] formalValues = new String[values.length];
-
-            for (int i = 0; i < values.length; i++)
-                formalValues[i] = values[i].getFormal(context);
-
-            return formalValues;
         }
     }
 
@@ -533,10 +543,10 @@ public class PlayConsole {
      */
     public static class StatsRequestBuilder {
         private final String packageName;
-        private final List<Metric> metrics;
+        private final Map<String, Object> additionalParams;
+        private Metric metric;
         private Dimension dimension;
         private Pair<Long, Long> interval;
-        private Map<String, Object> additionalParams;
 
         /**
          * Default constructor
@@ -545,7 +555,7 @@ public class PlayConsole {
          */
         public StatsRequestBuilder(String packageName) {
             this.packageName = packageName;
-            this.metrics = new ArrayList<>();
+            this.additionalParams = new HashMap<>();
         }
 
         /**
@@ -562,22 +572,11 @@ public class PlayConsole {
         /**
          * See {@link Metric}
          *
-         * @param metrics some metrics
+         * @param metric the metric
          * @return this
          */
-        public StatsRequestBuilder addMetrics(Metric... metrics) {
-            addMetrics(Arrays.asList(metrics));
-            return this;
-        }
-
-        /**
-         * See {@link Metric}
-         *
-         * @param metrics some metrics
-         * @return this
-         */
-        public StatsRequestBuilder addMetrics(List<Metric> metrics) {
-            this.metrics.addAll(metrics);
+        public StatsRequestBuilder setMetric(Metric metric) {
+            this.metric = metric;
             return this;
         }
 
@@ -605,13 +604,25 @@ public class PlayConsole {
         }
 
         /**
+         * If enabled avoid missing dates in the interval.
+         * This may not work with {@link Dimension}s other than {@link Dimension#DATE}.
+         *
+         * @param enabled enabled
+         * @return this
+         */
+        public StatsRequestBuilder setPaddingEnabled(boolean enabled) {
+            this.additionalParams.put("15", enabled ? 1 : 0);
+            return this;
+        }
+
+        /**
          * Required in some requests, pay attention.
          *
          * @param additionalParams Map of keys and values like a JSONObject
          * @return this
          */
-        public StatsRequestBuilder setAdditionalParams(Map<String, Object> additionalParams) {
-            this.additionalParams = additionalParams;
+        public StatsRequestBuilder addAdditionalParams(Map<String, Object> additionalParams) {
+            this.additionalParams.putAll(additionalParams);
             return this;
         }
     }

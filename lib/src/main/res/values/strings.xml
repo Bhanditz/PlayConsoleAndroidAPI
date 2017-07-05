@@ -12,5 +12,6 @@
     <string name="crashes">Crashes</string>
     <string name="date">Date</string>
     <string name="country">Country</string>
-    <string name="sdkVersion">Android SDK version</string>
+    <string name="sdkVersion">Android version</string>
+    <string name="none">None</string>
 </resources>
