@@ -14,4 +14,8 @@
     <string name="country">Country</string>
     <string name="sdkVersion">Android version</string>
     <string name="none">None</string>
+    <string name="serviceProvider">Service provider</string>
+    <string name="appVersion">App version</string>
+    <string name="language">Language</string>
+    <string name="device">Device</string>
 </resources>

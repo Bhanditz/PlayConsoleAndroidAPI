@@ -387,14 +387,14 @@ public class PlayConsole {
         UNINSTALLS(11),
 
         /**
-         * Number of ratings per day
-         */
-        RATINGS_NUM(71),
-
-        /**
          * Average rating per day
          */
         AVERAGE_RATING(15),
+
+        /**
+         * Number of ratings per day
+         */
+        RATINGS_NUM(71),
 
         /**
          * Number of active installs registered every day
@@ -455,9 +455,14 @@ public class PlayConsole {
     @SuppressWarnings("unused")
     public enum Dimension {
         /**
-         * Date in yyyyMMdd format
+         * Device Android SDK version as both API code and Android version
          */
-        DATE(17),
+        SDK_VERSION(1),
+
+        /**
+         * Device model
+         */
+        DEVICE(2),
 
         /**
          * Country as both country code and country name
@@ -465,11 +470,26 @@ public class PlayConsole {
         COUNTRY(3),
 
         /**
-         * Device Android SDK version as both API code and Android version
+         * Device language as both language code and language name
          */
-        SDK_VERSION(1);
+        LANGUAGE(4),
 
-        private final int val;
+        /**
+         * Application version as version code
+         */
+        APPLICATION_VERSION(5),
+
+        /**
+         * Service provider (or mobile agent)
+         */
+        SERVICE_PROVIDER(6),
+
+        /**
+         * Date in yyyyMMdd format
+         */
+        DATE(17);
+
+        public final int val;
 
         Dimension(int val) {
             this.val = val;
@@ -488,14 +508,42 @@ public class PlayConsole {
             return formalValues;
         }
 
+        public static Dimension parse(int val) {
+            switch (val) {
+                case 1:
+                    return SDK_VERSION;
+                case 2:
+                    return DEVICE;
+                case 3:
+                    return COUNTRY;
+                case 4:
+                    return LANGUAGE;
+                case 5:
+                    return APPLICATION_VERSION;
+                case 6:
+                    return SERVICE_PROVIDER;
+                default:
+                case 17:
+                    return DATE;
+            }
+        }
+
         public String getFormal(Context context) {
             switch (this) {
                 case DATE:
                     return context.getString(R.string.date);
+                case DEVICE:
+                    return context.getString(R.string.device);
                 case COUNTRY:
                     return context.getString(R.string.country);
                 case SDK_VERSION:
                     return context.getString(R.string.sdkVersion);
+                case LANGUAGE:
+                    return context.getString(R.string.language);
+                case APPLICATION_VERSION:
+                    return context.getString(R.string.appVersion);
+                case SERVICE_PROVIDER:
+                    return context.getString(R.string.serviceProvider);
                 default:
                     return context.getString(R.string.unknown);
             }
