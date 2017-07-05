@@ -377,34 +377,94 @@ public class PlayConsole {
     @SuppressWarnings("unused")
     public enum Metric {
         /**
-         * Number of installs per day
+         * The number of devices that users install your app on for the first time.
          */
-        INSTALLS(10),
+        DEVICE_INSTALLS(4),
 
         /**
-         * Number of uninstalls per day
+         * The number of devices which your app is uninstalled from.
          */
-        UNINSTALLS(11),
+        DEVICE_UNINSTALLS(5),
 
         /**
-         * Average rating per day
+         * The number of devices that install an update for your app.
+         */
+        DEVICE_UPGRADES(6),
+
+        /**
+         * The number of unique users who have ever installed your app, including those who have uninstalled it.
+         */
+        USER_CUMULATIVE_INSTALLS(8),
+
+        /**
+         * The number of unique users who install your app on at least one device for the first time.
+         */
+        USER_INSTALLS(10),
+
+        /**
+         * The number of unique users who uninstall your app from all of their devices.
+         */
+        USER_UNINSTALLS(11),
+
+        /**
+         * The average rating your app receives.
          */
         AVERAGE_RATING(15),
 
         /**
-         * Number of ratings per day
+         * The average rating your app has received since you first launched.
+         */
+        CUMULATIVE_AVERAGE_RATING(16),
+
+        /**
+         * The revenue that your app generates each day. This is based on estimated sales and includes any tax or other fees.
+         */
+        REVENUE(17),
+
+        /**
+         * The number of unique users who buy one or more items in your app.
+         */
+        NEW_BUYERS(36, Dimension.SDK_VERSION, Dimension.LANGUAGE, Dimension.APPLICATION_VERSION, Dimension.CARRIER),
+
+        /**
+         * The number of unique users who buy anything in your app for the first time.
+         */
+        BUYERS(38, Dimension.SDK_VERSION, Dimension.LANGUAGE, Dimension.APPLICATION_VERSION, Dimension.CARRIER),
+
+        /**
+         * The number of ratings your app received.
          */
         RATINGS_NUM(71),
 
         /**
-         * Number of active installs registered every day
+         * Number of Android devices that have been active in the previous 30 days that your app is installed on.
          */
         ACTIVE_INSTALLS(81, Dimension.SDK_VERSION, Dimension.COUNTRY),
 
         /**
-         * Number of crashes per day
+         * Number of crash reports collected from Android devices.
          */
-        CRASHES(96, Dimension.SDK_VERSION, Dimension.COUNTRY);
+        CRASHES(96, Dimension.SDK_VERSION, Dimension.COUNTRY),
+
+        /**
+         * Number of ANR (Application Not Responding) reports collected from Android devices.
+         */
+        ANR(97, Dimension.SDK_VERSION, Dimension.COUNTRY),
+
+        /**
+         * How many times the app has been updated.
+         */
+        EVENTS_UPDATE(104, Dimension.SDK_VERSION, Dimension.DEVICE, Dimension.COUNTRY, Dimension.LANGUAGE, Dimension.CARRIER),
+
+        /**
+         * How many times the app has been uninstalled.
+         */
+        EVENTS_UNINSTALL(146, Dimension.SDK_VERSION, Dimension.DEVICE, Dimension.COUNTRY, Dimension.LANGUAGE, Dimension.CARRIER),
+
+        /**
+         * How many times the app has been installed.
+         */
+        EVENTS_INSTALL(147, Dimension.SDK_VERSION, Dimension.DEVICE, Dimension.COUNTRY, Dimension.LANGUAGE, Dimension.CARRIER);
 
         private final int val;
         private final Dimension[] unsupportedDimensions;
@@ -430,10 +490,26 @@ public class PlayConsole {
 
         public String getFormal(Context context) {
             switch (this) {
-                case INSTALLS:
-                    return context.getString(R.string.installs);
-                case UNINSTALLS:
-                    return context.getString(R.string.uninstalls);
+                case DEVICE_INSTALLS:
+                    return context.getString(R.string.deviceInstalls);
+                case DEVICE_UNINSTALLS:
+                    return context.getString(R.string.deviceUninstalls);
+                case DEVICE_UPGRADES:
+                    return context.getString(R.string.deviceUpgrades);
+                case USER_CUMULATIVE_INSTALLS:
+                    return context.getString(R.string.userCumulativeInstalls);
+                case USER_INSTALLS:
+                    return context.getString(R.string.userInstalls);
+                case USER_UNINSTALLS:
+                    return context.getString(R.string.userUninstalls);
+                case CUMULATIVE_AVERAGE_RATING:
+                    return context.getString(R.string.cumulativeAverageRating);
+                case REVENUE:
+                    return context.getString(R.string.revenue);
+                case NEW_BUYERS:
+                    return context.getString(R.string.newBuyers);
+                case BUYERS:
+                    return context.getString(R.string.buyers);
                 case RATINGS_NUM:
                     return context.getString(R.string.ratingsNum);
                 case AVERAGE_RATING:
@@ -442,6 +518,14 @@ public class PlayConsole {
                     return context.getString(R.string.activeInstalls);
                 case CRASHES:
                     return context.getString(R.string.crashes);
+                case ANR:
+                    return context.getString(R.string.anrs);
+                case EVENTS_UPDATE:
+                    return context.getString(R.string.eventsUpdate);
+                case EVENTS_UNINSTALL:
+                    return context.getString(R.string.eventsUninstall);
+                case EVENTS_INSTALL:
+                    return context.getString(R.string.eventsInstall);
                 default:
                     return context.getString(R.string.unknown);
             }
@@ -480,9 +564,9 @@ public class PlayConsole {
         APPLICATION_VERSION(5),
 
         /**
-         * Service provider (or mobile agent)
+         * Carrier name
          */
-        SERVICE_PROVIDER(6),
+        CARRIER(6),
 
         /**
          * Date in yyyyMMdd format
@@ -521,7 +605,7 @@ public class PlayConsole {
                 case 5:
                     return APPLICATION_VERSION;
                 case 6:
-                    return SERVICE_PROVIDER;
+                    return CARRIER;
                 default:
                 case 17:
                     return DATE;
@@ -542,8 +626,8 @@ public class PlayConsole {
                     return context.getString(R.string.language);
                 case APPLICATION_VERSION:
                     return context.getString(R.string.appVersion);
-                case SERVICE_PROVIDER:
-                    return context.getString(R.string.serviceProvider);
+                case CARRIER:
+                    return context.getString(R.string.carrier);
                 default:
                     return context.getString(R.string.unknown);
             }

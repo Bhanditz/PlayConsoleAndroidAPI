@@ -18,4 +18,19 @@
     <string name="appVersion">App version</string>
     <string name="language">Language</string>
     <string name="device">Device</string>
+    <string name="carrier">Carrier</string>
+    <string name="deviceInstalls">Installs by device</string>
+    <string name="deviceUninstalls">Uninstalls by device</string>
+    <string name="deviceUpgrades">Upgrades by device</string>
+    <string name="userInstalls">Installs by user</string>
+    <string name="userUninstalls">Uninstalls by user</string>
+    <string name="userCumulativeInstalls">Cumulative installs by user</string>
+    <string name="anrs">ANRs</string>
+    <string name="buyers">Buyers</string>
+    <string name="newBuyers">New buyers</string>
+    <string name="revenue">Revenue</string>
+    <string name="eventsUpdate">Update events</string>
+    <string name="eventsUninstall">Uninstall events</string>
+    <string name="eventsInstall">Install events</string>
+    <string name="cumulativeAverageRating">Cumulative average rating</string>
 </resources>
