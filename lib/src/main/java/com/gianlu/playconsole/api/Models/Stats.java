@@ -30,7 +30,7 @@ public class Stats {
         return parser;
     }
 
-    public boolean hasDimension()  {
+    public boolean hasDimension() {
         return entries.size() > 1;
     }
 
@@ -43,6 +43,40 @@ public class Stats {
 
         public Entry(JSONObject obj) {
             this.obj = obj;
+        }
+
+        /**
+         * Return the key of the entry (as it's usually)
+         *
+         * @return the key
+         * @throws JSONException if the value cannot be found
+         */
+        public String getKey() throws JSONException {
+            return obj.getJSONArray("1").getString(0);
+        }
+
+        /**
+         * Return the formal representation of key of the entry (as it's usually)
+         *
+         * @return the key
+         * @throws JSONException if the value cannot be found
+         */
+        public String getKeyDescription() throws JSONException {
+            return obj.getJSONArray("4").getString(0);
+        }
+
+        /**
+         * Return the value of the entry (as it's usually)
+         *
+         * @return the value
+         * @throws JSONException    if the response is invalid (or unexpected)
+         * @throws RuntimeException if the value cannot be found
+         */
+        public float getValue() throws JSONException, RuntimeException {
+            JSONObject data = obj.getJSONArray("2").getJSONObject(0);
+            if (data.has("1")) return data.getLong("1");
+            else if (data.has("2")) return (float) data.getDouble("2");
+            else throw new RuntimeException("Cannot find value!");
         }
     }
 }
