@@ -34,9 +34,10 @@ public class Annotation implements Serializable {
 
         public static Type parse(int val) {
             switch (val) {
-                default:
                 case 1:
                     return RELEASE;
+                default:
+                    throw new IllegalArgumentException("Unknown annotation type: " + val);
             }
         }
     }

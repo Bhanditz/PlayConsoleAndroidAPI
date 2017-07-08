@@ -11,6 +11,7 @@ import com.gianlu.playconsole.api.Models.AndroidApp;
 import com.gianlu.playconsole.api.Models.Annotation;
 import com.gianlu.playconsole.api.Models.AppVersionsHistory;
 import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
+import com.gianlu.playconsole.api.Models.Notification;
 import com.gianlu.playconsole.api.Models.SessionInfo;
 import com.gianlu.playconsole.api.Models.Stats;
 
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -346,6 +348,49 @@ public class PlayConsole {
         }
     }
 
+    /**
+     * Fetches notifications
+     *
+     * @param timeZone the local {@link TimeZone}
+     * @param listener handles the request
+     */
+    public void fetchNotifications(TimeZone timeZone, @NonNull final IResult<List<Notification>> listener) {
+        try {
+            JSONObject params = new JSONObject();
+            params.put("1", timeZone.getID());
+
+            basicRequest(Endpoint.NOTIFICATIONS, Method.FETCH, params, new IJSONObject() {
+                @Override
+                public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                    final List<Notification> notifications = Notification.toNotificationsList(resp.getJSONObject("result").getJSONArray("1"));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onResult(notifications);
+                        }
+                    });
+                }
+
+                @Override
+                public void onException(final Exception ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            });
+        } catch (final JSONException ex) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onException(ex);
+                }
+            });
+        }
+    }
+
     private void raiseException(JSONObject resp) throws PlayConsoleException {
         if (resp.has("error")) throw new PlayConsoleException(resp.optJSONObject("error"));
     }
@@ -530,10 +575,6 @@ public class PlayConsole {
                     return context.getString(R.string.unknown);
             }
         }
-
-        public boolean supportsNoDimension() {
-            return this == ACTIVE_INSTALLS;
-        }
     }
 
     @SuppressWarnings("unused")
@@ -637,7 +678,8 @@ public class PlayConsole {
     @SuppressWarnings("unused")
     public enum Endpoint {
         STATISTICS("statistics"),
-        ANDROIDAPPS("androidapps");
+        ANDROIDAPPS("androidapps"),
+        NOTIFICATIONS("notifications");
         private final String endpoint;
 
         Endpoint(String endpoint) {
