@@ -33,4 +33,7 @@
     <string name="eventsUninstall">Uninstall events</string>
     <string name="eventsInstall">Install events</string>
     <string name="cumulativeAverageRating">Cumulative average rating</string>
+    <string name="production">Production</string>
+    <string name="beta">Beta</string>
+    <string name="alpha">Alpha</string>
 </resources>
