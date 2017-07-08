@@ -12,6 +12,7 @@ import com.gianlu.playconsole.api.Models.Annotation;
 import com.gianlu.playconsole.api.Models.AppVersionsHistory;
 import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
 import com.gianlu.playconsole.api.Models.Notification;
+import com.gianlu.playconsole.api.Models.ReleaseTracksSummary;
 import com.gianlu.playconsole.api.Models.SessionInfo;
 import com.gianlu.playconsole.api.Models.Stats;
 
@@ -349,7 +350,7 @@ public class PlayConsole {
     }
 
     /**
-     * Fetches notifications
+     * Retrieves a list of {@link Notification}
      *
      * @param timeZone the local {@link TimeZone}
      * @param listener handles the request
@@ -367,6 +368,49 @@ public class PlayConsole {
                         @Override
                         public void run() {
                             listener.onResult(notifications);
+                        }
+                    });
+                }
+
+                @Override
+                public void onException(final Exception ex) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onException(ex);
+                        }
+                    });
+                }
+            });
+        } catch (final JSONException ex) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onException(ex);
+                }
+            });
+        }
+    }
+
+    /**
+     * Fetches the release tracks info
+     *
+     * @param packageName the package name of the desired app
+     * @param listener    handles the request
+     */
+    public void getReleaseTracksSummary(String packageName, @NonNull final IResult<ReleaseTracksSummary> listener) {
+        try {
+            JSONObject params = new JSONObject();
+            params.put("1", packageName);
+
+            basicRequest(Endpoint.APPRELEASES, Method.GET_RELEASE_TRACKS_SUMMARY, params, new IJSONObject() {
+                @Override
+                public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                    final ReleaseTracksSummary summary = new ReleaseTracksSummary(resp.getJSONObject("result").getJSONArray("1"));
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onResult(summary);
                         }
                     });
                 }
@@ -679,6 +723,7 @@ public class PlayConsole {
     public enum Endpoint {
         STATISTICS("statistics"),
         ANDROIDAPPS("androidapps"),
+        APPRELEASES("appreleases"),
         NOTIFICATIONS("notifications");
         private final String endpoint;
 
@@ -690,6 +735,7 @@ public class PlayConsole {
     @SuppressWarnings("unused")
     public enum Method {
         FETCH("fetch"),
+        GET_RELEASE_TRACKS_SUMMARY("getReleaseTracksSummary"),
         FETCH_STATS("fetchStats"),
         GET_ANNOTATIONS("getAnnotations");
 
