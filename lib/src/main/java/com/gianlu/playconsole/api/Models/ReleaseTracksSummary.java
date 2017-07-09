@@ -8,7 +8,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ReleaseTracksSummary {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ReleaseTracksSummary implements Serializable {
     public final ReleaseTrack production;
     public final ReleaseTrack beta;
     public final ReleaseTrack alpha;
@@ -68,17 +72,23 @@ public class ReleaseTracksSummary {
         NEWER
     }
 
-    // TODO: Missing 2, 6, 8, 5->2->3, 5->2->4, 7->1, 7->3
-    public class ReleaseTrack {
+    // TODO: Missing 5->2->3, 5->2->4, 7->1, 7->3
+    public class ReleaseTrack implements Serializable {
         public final Track which;
+        public final String trackId;
         public final Status status;
         public final boolean fullRollout;
         public final long rolloutTimestamp;
         public final String versionName;
-        public final int versionCode;
+        public final String lastReleaseId;
+        public final List<Integer> versionCodes;
+        public final List<String> apkIds;
 
         public ReleaseTrack(JSONObject obj) throws JSONException {
             which = Track.parse(obj.getInt("1"));
+            trackId = obj.getString("2");
+            versionCodes = new ArrayList<>();
+            apkIds = new ArrayList<>();
 
             JSONObject releaseInfo = obj.optJSONObject("5");
             JSONObject someData = obj.optJSONObject("7");
@@ -89,10 +99,18 @@ public class ReleaseTracksSummary {
                 fullRollout = false;
                 rolloutTimestamp = -1;
                 versionName = null;
-                versionCode = -1;
+                lastReleaseId = null;
             } else {
                 versionName = releaseInfo.getJSONObject("1").getString("1");
-                versionCode = releaseInfo.getJSONArray("3").getInt(0);
+                lastReleaseId = releaseInfo.getString("6");
+
+                JSONArray versionCodesArray = releaseInfo.getJSONArray("3");
+                for (int i = 0; i < versionCodesArray.length(); i++)
+                    versionCodes.add(versionCodesArray.getInt(i));
+
+                JSONArray apkIdsArray = releaseInfo.getJSONArray("8");
+                for (int i = 0; i < apkIdsArray.length(); i++)
+                    apkIds.add(apkIdsArray.getString(i));
 
                 JSONObject rolloutInfo = releaseInfo.getJSONObject("2");
                 fullRollout = rolloutInfo.getInt("1") == 1;

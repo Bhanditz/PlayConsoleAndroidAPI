@@ -3,13 +3,15 @@ package com.gianlu.playconsole.api;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 
 import com.gianlu.playconsole.api.Exceptions.NetworkException;
 import com.gianlu.playconsole.api.Exceptions.PlayConsoleException;
 import com.gianlu.playconsole.api.Models.AndroidApp;
 import com.gianlu.playconsole.api.Models.Annotation;
-import com.gianlu.playconsole.api.Models.AppVersionsHistory;
+import com.gianlu.playconsole.api.Models.Apk;
+import com.gianlu.playconsole.api.Models.AppRelease;
 import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
 import com.gianlu.playconsole.api.Models.Notification;
 import com.gianlu.playconsole.api.Models.ReleaseTracksSummary;
@@ -27,7 +29,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,361 +79,20 @@ public class PlayConsole {
         });
     }
 
-    /**
-     * Retrieves a list of {@link AndroidApp} associated with the current account
-     *
-     * @param listener handles the request
-     */
-    public void listAndroidApps(@NonNull final IResult<List<AndroidApp>> listener) {
-        try {
-            basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, new JSONObject("{\"2\":1,\"3\":7}"), new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException {
-                    final List<AndroidApp> apps = AndroidApp.toAndroidAppsList(resp.getJSONObject("result").getJSONArray("1"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(apps);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
+    public Notifications notifications() {
+        return new Notifications();
     }
 
-    /**
-     * Retrieves a list of {@link DetailedAndroidApp} specified by their package name
-     *
-     * @param packageNames package names of the {@link DetailedAndroidApp} to retrieve
-     * @param listener     handles the request
-     */
-    public void listDetailedAndroidApps(List<String> packageNames, @NonNull final IResult<List<DetailedAndroidApp>> listener) {
-        try {
-            JSONObject params = new JSONObject().put("1", Utils.toJSONArray(packageNames)).put("3", 1);
-            basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException {
-                    final List<DetailedAndroidApp> apps = DetailedAndroidApp.toDetailedAndroidAppsList(resp.getJSONObject("result").getJSONArray("1"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(apps);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
+    public AppReleases appReleases() {
+        return new AppReleases();
     }
 
-    /**
-     * Retrieves a {@link DetailedAndroidApp} specified by its package name
-     *
-     * @param packageName package name of the {@link DetailedAndroidApp} to retrieve
-     * @param listener    handles the request
-     */
-    public void fetchDetailedAndroidApp(String packageName, @NonNull final IResult<DetailedAndroidApp> listener) {
-        listDetailedAndroidApps(Collections.singletonList(packageName), new IResult<List<DetailedAndroidApp>>() {
-            @Override
-            public void onResult(List<DetailedAndroidApp> result) {
-                listener.onResult(result.get(0));
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                listener.onException(ex);
-            }
-        });
+    public AndroidApps androidApps() {
+        return new AndroidApps();
     }
 
-    /**
-     * Retrieves a list of {@link DetailedAndroidApp} specified by their package name
-     *
-     * @param packageNames package names of the {@link DetailedAndroidApp} to retrieve
-     * @param listener     handles the request
-     */
-    public void listAppVersionsHistories(List<String> packageNames, @NonNull final IResult<List<AppVersionsHistory>> listener) {
-        try {
-            JSONObject params = new JSONObject().put("1", Utils.toJSONArray(packageNames)).put("3", 4);
-            basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException {
-                    final List<AppVersionsHistory> apps = AppVersionsHistory.toAppVersionsHistoriesList(resp.getJSONObject("result").getJSONArray("1"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(apps);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves a {@link AppVersionsHistory} specified by its package name
-     *
-     * @param packageName package name of the {@link AppVersionsHistory} to retrieve
-     * @param listener    handles the request
-     */
-    public void fetchAppVersionsHistory(String packageName, @NonNull final IResult<AppVersionsHistory> listener) {
-        listAppVersionsHistories(Collections.singletonList(packageName), new IResult<List<AppVersionsHistory>>() {
-            @Override
-            public void onResult(List<AppVersionsHistory> result) {
-                listener.onResult(result.get(0));
-            }
-
-            @Override
-            public void onException(Exception ex) {
-                listener.onException(ex);
-            }
-        });
-    }
-
-    /**
-     * Retrieves a list of {@link Annotation} specified by the package name
-     *
-     * @param packageName package name of the list of {@link Annotation} to retrieve
-     * @param listener    handles the request
-     */
-    public void fetchAnnotations(String packageName, @NonNull final IResult<List<Annotation>> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            params.put("1", packageName);
-
-            basicRequest(Endpoint.STATISTICS, Method.GET_ANNOTATIONS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final List<Annotation> annotations = Annotation.toAnnotationsList(resp.getJSONObject("result").getJSONObject("1").getJSONArray("1")); // Insane
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(annotations);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Fetches stats
-     *
-     * @param builder  see {@link StatsRequestBuilder}
-     * @param listener handles the request
-     */
-    public void fetchStats(StatsRequestBuilder builder, @NonNull final IResult<Stats> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            JSONObject actualParams = new JSONObject();
-            JSONObject appInfo = new JSONObject();
-            appInfo.put("1", builder.packageName).put("2", 1);
-
-            Pair<Long, Long> interval = builder.interval;
-            if (interval == null) {
-                actualParams.put("2", -1).put("3", -1);
-            } else {
-                DateTime today = new DateTime();
-                actualParams.put("2", Days.daysBetween(today, new DateTime(interval.first)).getDays())
-                        .put("3", Days.daysBetween(today, new DateTime(interval.second)).getDays());
-            }
-
-            if (builder.dimension != null)
-                actualParams.put("7", new JSONArray().put(builder.dimension.val));
-            if (builder.metric != null)
-                actualParams.put("8", new JSONArray().put(builder.metric.val));
-
-            if (builder.additionalParams != null) {
-                for (Map.Entry<String, Object> entry : builder.additionalParams.entrySet())
-                    actualParams.put(entry.getKey(), entry.getValue());
-            }
-
-            actualParams.put("1", appInfo);
-            params.put("1", new JSONArray().put(actualParams));
-
-            basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final Stats stats = new Stats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(stats);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieves a list of {@link Notification}
-     *
-     * @param timeZone the local {@link TimeZone}
-     * @param listener handles the request
-     */
-    public void fetchNotifications(TimeZone timeZone, @NonNull final IResult<List<Notification>> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            params.put("1", timeZone.getID());
-
-            basicRequest(Endpoint.NOTIFICATIONS, Method.FETCH, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final List<Notification> notifications = Notification.toNotificationsList(resp.getJSONObject("result").getJSONArray("1"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(notifications);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
-    }
-
-    /**
-     * Fetches the release tracks info
-     *
-     * @param packageName the package name of the desired app
-     * @param listener    handles the request
-     */
-    public void getReleaseTracksSummary(String packageName, @NonNull final IResult<ReleaseTracksSummary> listener) {
-        try {
-            JSONObject params = new JSONObject();
-            params.put("1", packageName);
-
-            basicRequest(Endpoint.APPRELEASES, Method.GET_RELEASE_TRACKS_SUMMARY, params, new IJSONObject() {
-                @Override
-                public void onResponse(JSONObject resp) throws JSONException, ParseException {
-                    final ReleaseTracksSummary summary = new ReleaseTracksSummary(resp.getJSONObject("result").getJSONArray("1"));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onResult(summary);
-                        }
-                    });
-                }
-
-                @Override
-                public void onException(final Exception ex) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.onException(ex);
-                        }
-                    });
-                }
-            });
-        } catch (final JSONException ex) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.onException(ex);
-                }
-            });
-        }
+    public Statistics statistics() {
+        return new Statistics();
     }
 
     private void raiseException(JSONObject resp) throws PlayConsoleException {
@@ -737,7 +397,8 @@ public class PlayConsole {
         FETCH("fetch"),
         GET_RELEASE_TRACKS_SUMMARY("getReleaseTracksSummary"),
         FETCH_STATS("fetchStats"),
-        GET_ANNOTATIONS("getAnnotations");
+        GET_ANNOTATIONS("getAnnotations"),
+        GET_RELEASE_TRACK_HISTORY("getReleaseTrackHistory");
 
         private final String method;
 
@@ -758,8 +419,15 @@ public class PlayConsole {
         void onException(Exception ex);
     }
 
+    public interface IReleaseTrackHistory {
+
+        void onResult(List<AppRelease> result, @Nullable String nextPageId);
+
+        void onException(Exception ex);
+    }
+
     /**
-     * Creates a request to pass in {@link #fetchStats(StatsRequestBuilder, IResult)}
+     * Creates a request to pass in {@link Statistics#fetchStats(StatsRequestBuilder, IResult)}
      */
     public static class StatsRequestBuilder {
         private final String packageName;
@@ -844,6 +512,390 @@ public class PlayConsole {
         public StatsRequestBuilder addAdditionalParams(Map<String, Object> additionalParams) {
             this.additionalParams.putAll(additionalParams);
             return this;
+        }
+    }
+
+    public class Notifications {
+
+        private Notifications() {
+        }
+
+        /**
+         * Retrieves a list of {@link Notification}
+         *
+         * @param timeZone the local {@link TimeZone}
+         * @param listener handles the request
+         */
+        public void listNotifications(TimeZone timeZone, @NonNull final IResult<List<Notification>> listener) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put("1", timeZone.getID());
+
+                basicRequest(Endpoint.NOTIFICATIONS, Method.FETCH, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        final List<Notification> notifications = Notification.toNotificationsList(resp.getJSONObject("result").getJSONArray("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(notifications);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+    }
+
+    public class AppReleases {
+
+        private AppReleases() {
+        }
+
+        /**
+         * See {@link #getReleaseTrackHistory(String, String, IReleaseTrackHistory)}. This will retrieve first 10 items.
+         *
+         * @param releaseId start release id
+         * @param listener  handles the request
+         */
+        public void getReleaseTrackHistory(String releaseId, @NonNull final IReleaseTrackHistory listener) {
+            getReleaseTrackHistory(releaseId, null, listener);
+        }
+
+        /**
+         * Fetches a list of {@link AppRelease}.
+         *
+         * @param releaseId  start release id
+         * @param nextPageId an id provided from the previous request, if null see {@link #getReleaseTrackHistory(String, IReleaseTrackHistory)}
+         * @param listener   handles the request
+         */
+        public void getReleaseTrackHistory(String releaseId, @Nullable String nextPageId, @NonNull final IReleaseTrackHistory listener) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put("1", releaseId);
+                if (nextPageId != null) params.put("2", nextPageId);
+
+                basicRequest(Endpoint.APPRELEASES, Method.GET_RELEASE_TRACK_HISTORY, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        JSONObject result = resp.getJSONObject("result");
+                        final String nextPageId = result.optString("2");
+                        final List<AppRelease> releases = AppRelease.toAppReleasesList(result.getJSONArray("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(releases, nextPageId);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Fetches the release tracks info
+         *
+         * @param packageName the package name of the desired app
+         * @param listener    handles the request
+         */
+        public void getReleaseTracksSummary(String packageName, @NonNull final IResult<ReleaseTracksSummary> listener) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put("1", packageName);
+
+                basicRequest(Endpoint.APPRELEASES, Method.GET_RELEASE_TRACKS_SUMMARY, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        final ReleaseTracksSummary summary = new ReleaseTracksSummary(resp.getJSONObject("result").getJSONArray("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(summary);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+    }
+
+    public class Statistics {
+
+        private Statistics() {
+        }
+
+        /**
+         * Retrieves a list of {@link Annotation} specified by the package name
+         *
+         * @param packageName package name of the list of {@link Annotation} to retrieve
+         * @param listener    handles the request
+         */
+        public void listAnnotations(String packageName, @NonNull final IResult<List<Annotation>> listener) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put("1", packageName);
+
+                basicRequest(Endpoint.STATISTICS, Method.GET_ANNOTATIONS, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        final List<Annotation> annotations = Annotation.toAnnotationsList(resp.getJSONObject("result").getJSONObject("1").getJSONArray("1")); // Insane
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(annotations);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Fetches stats
+         *
+         * @param builder  see {@link StatsRequestBuilder}
+         * @param listener handles the request
+         */
+        public void fetchStats(StatsRequestBuilder builder, @NonNull final IResult<Stats> listener) {
+            try {
+                JSONObject params = new JSONObject();
+                JSONObject actualParams = new JSONObject();
+                JSONObject appInfo = new JSONObject();
+                appInfo.put("1", builder.packageName).put("2", 1);
+
+                Pair<Long, Long> interval = builder.interval;
+                if (interval == null) {
+                    actualParams.put("2", -1).put("3", -1);
+                } else {
+                    DateTime today = new DateTime();
+                    actualParams.put("2", Days.daysBetween(today, new DateTime(interval.first)).getDays())
+                            .put("3", Days.daysBetween(today, new DateTime(interval.second)).getDays());
+                }
+
+                if (builder.dimension != null)
+                    actualParams.put("7", new JSONArray().put(builder.dimension.val));
+                if (builder.metric != null)
+                    actualParams.put("8", new JSONArray().put(builder.metric.val));
+
+                for (Map.Entry<String, Object> entry : builder.additionalParams.entrySet())
+                    actualParams.put(entry.getKey(), entry.getValue());
+
+                actualParams.put("1", appInfo);
+                params.put("1", new JSONArray().put(actualParams));
+
+                basicRequest(Endpoint.STATISTICS, Method.FETCH_STATS, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        final Stats stats = new Stats(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(stats);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+    }
+
+    public class AndroidApps {
+
+        private AndroidApps() {
+        }
+
+        /**
+         * Retrieves a list of {@link AndroidApp} associated with the current account
+         *
+         * @param listener handles the request
+         */
+        public void listAndroidApps(@NonNull final IResult<List<AndroidApp>> listener) {
+            try {
+                basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, new JSONObject("{\"2\":1,\"3\":7}"), new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException {
+                        final List<AndroidApp> apps = AndroidApp.toAndroidAppsList(resp.getJSONObject("result").getJSONArray("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(apps);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+
+        public void getDetailedAndroidApp(String packageName, @NonNull final IResult<DetailedAndroidApp> listener) {
+            try {
+                JSONObject params = new JSONObject().put("1", new JSONArray().put(packageName)).put("3", 1);
+                basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException {
+                        final DetailedAndroidApp app = new DetailedAndroidApp(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(app);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+
+        public void getAppApksHistory(String packageName, @NonNull final IResult<List<Apk>> listener) {
+            try {
+                JSONObject params = new JSONObject().put("1", new JSONArray().put(packageName)).put("3", 4);
+                basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException {
+                        final List<Apk> apks = Apk.toApksList(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0).getJSONObject("1").getJSONObject("4").getJSONObject("1").getJSONArray("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(apks);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
         }
     }
 }

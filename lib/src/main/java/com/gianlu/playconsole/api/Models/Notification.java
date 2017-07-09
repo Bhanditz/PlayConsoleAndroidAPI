@@ -4,19 +4,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 // TODO: Missing 2, 3->3->2
-public class Notification {
+public class Notification implements Serializable {
     public final String id;
     public final String shortMessage;
     public final String longMessage;
     public final String forApp;
     public final Type type;
     public final long timestamp;
-    public final List<Action> actions;
+    public final ArrayList<Action> actions;
 
     public Notification(JSONObject obj) throws JSONException {
         id = obj.getString("1");
@@ -76,7 +77,7 @@ public class Notification {
     }
 
     // TODO: Missing 4
-    public class Action {
+    public class Action implements Serializable {
         public final String actionUrl;
         public final String name;
 
