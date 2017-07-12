@@ -14,14 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: Missing 1->17, 6->7, 4, (1->2)
-public class AndroidApp implements Serializable {
+public class App implements Serializable {
     public final String packageName;
     public final String name;
     public final Status status;
     public final String iconUrl;
     public final long lastStoreDetailsUpdate;
 
-    public AndroidApp(JSONObject obj) throws JSONException {
+    public App(JSONObject obj) throws JSONException {
         JSONObject info = obj.getJSONObject("1");
         packageName = info.getString("1");
         status = Status.parseCode(info.getInt("7"));
@@ -34,10 +34,11 @@ public class AndroidApp implements Serializable {
     }
 
     /**
-     * Copies another {@link AndroidApp} (deep copy not required)
-     * @param app the copied {@link AndroidApp}
+     * Copies another {@link App} (deep copy not required)
+     *
+     * @param app the copied {@link App}
      */
-    public AndroidApp(AndroidApp app) {
+    public App(App app) {
         packageName = app.packageName;
         name = app.name;
         status = app.status;
@@ -45,10 +46,10 @@ public class AndroidApp implements Serializable {
         lastStoreDetailsUpdate = app.lastStoreDetailsUpdate;
     }
 
-    public static List<AndroidApp> toAndroidAppsList(JSONArray array) throws JSONException {
-        List<AndroidApp> apps = new ArrayList<>();
+    public static List<App> toAndroidAppsList(JSONArray array) throws JSONException {
+        List<App> apps = new ArrayList<>();
         for (int i = 0; i < array.length(); i++)
-            apps.add(new AndroidApp(array.getJSONObject(i)));
+            apps.add(new App(array.getJSONObject(i)));
 
         return apps;
     }
@@ -73,6 +74,7 @@ public class AndroidApp implements Serializable {
 
         /**
          * Returns a formal representation of the {@link Status}
+         *
          * @param context a {@link Context}
          * @return a formal representation of the {@link Status}
          */

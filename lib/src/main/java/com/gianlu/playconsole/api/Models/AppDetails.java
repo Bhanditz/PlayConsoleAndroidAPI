@@ -6,10 +6,11 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 // TODO: Missing 3->4, 6->8
-public class DetailedAndroidApp extends AndroidApp implements Serializable {
+public class AppDetails extends App implements Serializable {
     public final long lastApkUpdate;
     public final long published;
     public final long totalRatings;
@@ -17,9 +18,9 @@ public class DetailedAndroidApp extends AndroidApp implements Serializable {
     public final long numInstalls;
     public final long numActiveInstalls;
     public final float price;
-    public final String priceCurrency;
+    public final Currency priceCurrency;
 
-    public DetailedAndroidApp(JSONObject obj) throws JSONException {
+    public AppDetails(JSONObject obj) throws JSONException {
         super(obj);
         JSONObject info = obj.getJSONObject("1");
         JSONObject timingsObj = info.getJSONObject("11");
@@ -35,13 +36,13 @@ public class DetailedAndroidApp extends AndroidApp implements Serializable {
         JSONObject evenMoreInfo = obj.getJSONObject("6");
         JSONObject priceObj = evenMoreInfo.getJSONObject("5");
         price = (float) priceObj.getDouble("1");
-        priceCurrency = priceObj.getString("2");
+        priceCurrency = Currency.getInstance(priceObj.getString("2"));
     }
 
-    public static List<DetailedAndroidApp> toDetailedAndroidAppsList(JSONArray array) throws JSONException {
-        List<DetailedAndroidApp> apps = new ArrayList<>();
+    public static List<AppDetails> toDetailedAndroidAppsList(JSONArray array) throws JSONException {
+        List<AppDetails> apps = new ArrayList<>();
         for (int i = 0; i < array.length(); i++)
-            apps.add(new DetailedAndroidApp(array.getJSONObject(i)));
+            apps.add(new AppDetails(array.getJSONObject(i)));
 
         return apps;
     }

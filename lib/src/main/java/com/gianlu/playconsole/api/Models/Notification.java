@@ -9,18 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-// TODO: Missing 2, 3->3->2
+// TODO: Missing 3->3->2
 public class Notification implements Serializable {
     public final String id;
     public final String shortMessage;
     public final String longMessage;
     public final String forApp;
     public final Type type;
+    public final Status status;
     public final long timestamp;
     public final ArrayList<Action> actions;
 
     public Notification(JSONObject obj) throws JSONException {
         id = obj.getString("1");
+        status = Status.parse(obj.getInt("2"));
         timestamp = obj.getLong("4");
 
         JSONObject notifInfo = obj.getJSONObject("3");
@@ -55,6 +57,22 @@ public class Notification implements Serializable {
                 filtered.add(notif);
 
         return filtered;
+    }
+
+    public enum Status {
+        NOT_SEEN,
+        SEEN;
+
+        public static Status parse(int val) {
+            switch (val) {
+                case 1:
+                    return NOT_SEEN;
+                case 3:
+                    return SEEN;
+                default:
+                    throw new IllegalArgumentException("Unknown notification status: " + val);
+            }
+        }
     }
 
     public enum Type {

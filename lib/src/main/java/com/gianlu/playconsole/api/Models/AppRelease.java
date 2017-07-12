@@ -14,26 +14,26 @@ public class AppRelease implements Serializable {
     public final String versionName;
     public final String changelog;
     public final String releaseId;
-    public final List<ReleaseApk> newApks;
-    public final List<ReleaseApk> outdatedApks;
+    public final List<ReleaseApk> addedApks;
+    public final List<ReleaseApk> removedApks;
 
     public AppRelease(JSONObject obj) throws JSONException {
         versionName = obj.getJSONObject("2").getString("1");
         changelog = obj.getString("5");
         releaseId = obj.getString("6");
 
-        newApks = new ArrayList<>();
-        outdatedApks = new ArrayList<>();
+        addedApks = new ArrayList<>();
+        removedApks = new ArrayList<>();
 
         JSONObject apksDetails = obj.getJSONObject("4");
-        JSONArray newApksArray = apksDetails.getJSONArray("1");
-        for (int i = 0; i < newApksArray.length(); i++)
-            newApks.add(new ReleaseApk(newApksArray.getJSONObject(i)));
+        JSONArray addedApksArray = apksDetails.getJSONArray("1");
+        for (int i = 0; i < addedApksArray.length(); i++)
+            addedApks.add(new ReleaseApk(addedApksArray.getJSONObject(i)));
 
-        JSONArray outdatedApksArray = apksDetails.optJSONArray("2");
-        if (outdatedApksArray == null) return;
-        for (int i = 0; i < outdatedApksArray.length(); i++)
-            outdatedApks.add(new ReleaseApk(outdatedApksArray.getJSONObject(i)));
+        JSONArray removedApksArray = apksDetails.optJSONArray("2");
+        if (removedApksArray == null) return;
+        for (int i = 0; i < removedApksArray.length(); i++)
+            removedApks.add(new ReleaseApk(removedApksArray.getJSONObject(i)));
     }
 
     public static List<AppRelease> toAppReleasesList(JSONArray array) throws JSONException {

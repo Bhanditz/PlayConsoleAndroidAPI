@@ -8,11 +8,12 @@ import android.util.Pair;
 
 import com.gianlu.playconsole.api.Exceptions.NetworkException;
 import com.gianlu.playconsole.api.Exceptions.PlayConsoleException;
-import com.gianlu.playconsole.api.Models.AndroidApp;
 import com.gianlu.playconsole.api.Models.Annotation;
 import com.gianlu.playconsole.api.Models.Apk;
+import com.gianlu.playconsole.api.Models.App;
+import com.gianlu.playconsole.api.Models.AppDetails;
 import com.gianlu.playconsole.api.Models.AppRelease;
-import com.gianlu.playconsole.api.Models.DetailedAndroidApp;
+import com.gianlu.playconsole.api.Models.AppStoreDetails;
 import com.gianlu.playconsole.api.Models.Notification;
 import com.gianlu.playconsole.api.Models.ReleaseTracksSummary;
 import com.gianlu.playconsole.api.Models.SessionInfo;
@@ -398,7 +399,8 @@ public class PlayConsole {
         GET_RELEASE_TRACKS_SUMMARY("getReleaseTracksSummary"),
         FETCH_STATS("fetchStats"),
         GET_ANNOTATIONS("getAnnotations"),
-        GET_RELEASE_TRACK_HISTORY("getReleaseTrackHistory");
+        GET_RELEASE_TRACK_HISTORY("getReleaseTrackHistory"),
+        GET_APK_DETAILS_ACTION("getApkDetailsAction");
 
         private final String method;
 
@@ -668,6 +670,49 @@ public class PlayConsole {
                 });
             }
         }
+
+        /**
+         * Retrieves info about an APK
+         *
+         * @param apkId    the apk id
+         * @param listener handles the request
+         */
+        public void getApkDetails(String apkId, @NonNull final IResult<Apk> listener) {
+            try {
+                JSONObject params = new JSONObject();
+                params.put("1", apkId);
+
+                basicRequest(Endpoint.APPRELEASES, Method.GET_APK_DETAILS_ACTION, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException, ParseException {
+                        final Apk apk = new Apk(resp.getJSONObject("result").getJSONObject("1"));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(apk);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
     }
 
     public class Statistics {
@@ -790,16 +835,16 @@ public class PlayConsole {
         }
 
         /**
-         * Retrieves a list of {@link AndroidApp} associated with the current account
+         * Retrieves a list of {@link App} associated with the current account
          *
          * @param listener handles the request
          */
-        public void listAndroidApps(@NonNull final IResult<List<AndroidApp>> listener) {
+        public void listApps(@NonNull final IResult<List<App>> listener) {
             try {
                 basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, new JSONObject("{\"2\":1,\"3\":7}"), new IJSONObject() {
                     @Override
                     public void onResponse(JSONObject resp) throws JSONException {
-                        final List<AndroidApp> apps = AndroidApp.toAndroidAppsList(resp.getJSONObject("result").getJSONArray("1"));
+                        final List<App> apps = App.toAndroidAppsList(resp.getJSONObject("result").getJSONArray("1"));
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -828,13 +873,19 @@ public class PlayConsole {
             }
         }
 
-        public void getDetailedAndroidApp(String packageName, @NonNull final IResult<DetailedAndroidApp> listener) {
+        /**
+         * Retrieves an {@link AppDetails} specified by the package name
+         *
+         * @param packageName package name of the app
+         * @param listener    handles the request
+         */
+        public void getAppDetails(String packageName, @NonNull final IResult<AppDetails> listener) {
             try {
                 JSONObject params = new JSONObject().put("1", new JSONArray().put(packageName)).put("3", 1);
                 basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
                     @Override
                     public void onResponse(JSONObject resp) throws JSONException {
-                        final DetailedAndroidApp app = new DetailedAndroidApp(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
+                        final AppDetails app = new AppDetails(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -863,6 +914,12 @@ public class PlayConsole {
             }
         }
 
+        /**
+         * Retrieves a list of {@link Apk} specified by the package name
+         *
+         * @param packageName package name of the app
+         * @param listener    handles the request
+         */
         public void getAppApksHistory(String packageName, @NonNull final IResult<List<Apk>> listener) {
             try {
                 JSONObject params = new JSONObject().put("1", new JSONArray().put(packageName)).put("3", 4);
@@ -874,6 +931,47 @@ public class PlayConsole {
                             @Override
                             public void run() {
                                 listener.onResult(apks);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onException(final Exception ex) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onException(ex);
+                            }
+                        });
+                    }
+                });
+            } catch (final JSONException ex) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onException(ex);
+                    }
+                });
+            }
+        }
+
+        /**
+         * Retrieves an {@link AppStoreDetails} specified by the package name
+         *
+         * @param packageName package name of the app
+         * @param listener    handles the request
+         **/
+        public void getAppStoreDetails(String packageName, @NonNull final IResult<AppStoreDetails> listener) {
+            try {
+                JSONObject params = new JSONObject().put("1", new JSONArray().put(packageName)).put("3", 0);
+                basicRequest(Endpoint.ANDROIDAPPS, Method.FETCH, params, new IJSONObject() {
+                    @Override
+                    public void onResponse(JSONObject resp) throws JSONException {
+                        final AppStoreDetails details = new AppStoreDetails(resp.getJSONObject("result").getJSONArray("1").getJSONObject(0));
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onResult(details);
                             }
                         });
                     }

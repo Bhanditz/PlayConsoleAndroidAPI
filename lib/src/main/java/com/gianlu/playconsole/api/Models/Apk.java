@@ -7,11 +7,16 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+// TODO: Missing 3, 5, 6, 10, 12, 16
 public class Apk implements Serializable {
+    public final String extendedId;
     public final int versionCode;
+    public final String iconUrl;
     public final String versionName;
-    public final String[] supportedLanguages;
+    public final String packageName;
+    public final Locale[] supportedLanguages; // "--_--" is the app default language
     public final int minimumSdk;
     public final int targetSdk;
     public final String[] requestedFeatures;
@@ -21,20 +26,25 @@ public class Apk implements Serializable {
     public final long apkSize;
     public final String digestSHA1;
     public final String digestSHA256;
+    public final String appName;
 
     public Apk(JSONObject obj) throws JSONException {
+        extendedId = obj.getString("1");
         digestSHA1 = obj.getString("13");
         digestSHA256 = obj.getString("18");
 
         JSONObject info = obj.getJSONObject("2");
         apkSize = info.getLong("1");
+        packageName = info.getString("2");
         versionCode = info.getInt("3");
         versionName = info.getString("4");
+        appName = info.getString("5");
+        iconUrl = info.getJSONObject("6").getString("3");
 
         JSONArray supportedLanguagesArray = info.getJSONArray("7");
-        supportedLanguages = new String[supportedLanguagesArray.length() - 1];
-        for (int i = 1; i < supportedLanguagesArray.length(); i++)
-            supportedLanguages[i - 1] = supportedLanguagesArray.getString(i);
+        supportedLanguages = new Locale[supportedLanguagesArray.length()];
+        for (int i = 0; i < supportedLanguagesArray.length(); i++)
+            supportedLanguages[i] = Locale.forLanguageTag(supportedLanguagesArray.getString(i));
 
         minimumSdk = info.getInt("8");
         targetSdk = info.getInt("9");
