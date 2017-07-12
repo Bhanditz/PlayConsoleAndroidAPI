@@ -6,14 +6,14 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Locale;
 
-// TODO: Missing 1->(2->2, 4->2, 3, 4->1->5, 8, 10, 11, 12, 13, 16, 17), 7, 9
+// TODO: Missing 1->(2->2, 2->4, 3, 4->1->5, 8, 10, 11, 12, 13, 16, 17), 7, 9
 public class AppStoreDetails implements Serializable {
     public final String packageName;
     public final ArrayList<LocalizedProductDetails> productDetails;
     public final String contactEmail;
     public final ArrayList<Apk> apks;
+    public final ArrayList<Release> releases;
     public final ContentRating contentRating;
 
     public AppStoreDetails(JSONObject obj) throws JSONException {
@@ -29,8 +29,14 @@ public class AppStoreDetails implements Serializable {
 
         contactEmail = productStoreInfo.getJSONObject("3").getString("2");
 
+        JSONObject releasesInfo = info.getJSONObject("4");
+        releases = new ArrayList<>();
+        JSONArray releasesArray = releasesInfo.getJSONObject("2").getJSONArray("1");
+        for (int i = 0; i < releasesArray.length(); i++)
+            releases.add(new Release(releasesArray.getJSONObject(i)));
+
         apks = new ArrayList<>();
-        JSONArray apksArray = info.getJSONObject("4").getJSONObject("1").getJSONArray("1");
+        JSONArray apksArray = releasesInfo.getJSONObject("1").getJSONArray("1");
         for (int i = 0; i < apksArray.length(); i++)
             apks.add(new Apk(apksArray.getJSONObject(i)));
 
@@ -82,11 +88,36 @@ public class AppStoreDetails implements Serializable {
         }
     }
 
+    public class Release implements Serializable {
+        public final int versionCode;
+        public final ArrayList<LocalizedChangelog> changelogs;
+
+        public Release(JSONObject obj) throws JSONException {
+            versionCode = obj.getInt("1");
+
+            changelogs = new ArrayList<>();
+            JSONArray changelogsArray = obj.optJSONArray("2");
+            if (changelogsArray == null) return;
+            for (int i = 0; i < changelogsArray.length(); i++)
+                changelogs.add(new LocalizedChangelog(changelogsArray.getJSONObject(i)));
+        }
+
+        public class LocalizedChangelog implements Serializable {
+            public final String locale;
+            public final String changelog;
+
+            public LocalizedChangelog(JSONObject obj) throws JSONException {
+                locale = obj.getString("1");
+                changelog = obj.getString("3");
+            }
+        }
+    }
+
     // TODO: Missing 1, 2, 6, 7
     public class ContentRating implements Serializable {
         public final String IARCCertificateId;
         public final long submittedAt;
-        public final ArrayList<LocalizedRating> ratings;
+        public final ArrayList<Rating> ratings;
 
         public ContentRating(JSONObject obj) throws JSONException {
             IARCCertificateId = obj.getString("5");
@@ -95,15 +126,15 @@ public class AppStoreDetails implements Serializable {
             ratings = new ArrayList<>();
             JSONArray ratingsArray = obj.getJSONObject("4").getJSONArray("1");
             for (int i = 0; i < ratingsArray.length(); i++)
-                ratings.add(new LocalizedRating(ratingsArray.getJSONObject(i)));
+                ratings.add(new Rating(ratingsArray.getJSONObject(i)));
         }
 
         // TODO: Missing 5
-        public class LocalizedRating implements Serializable {
+        public class Rating implements Serializable {
             public final RatingProvider provider;
             public final int ratingType; // I can't list them all, maybe in the future
 
-            public LocalizedRating(JSONObject obj) throws JSONException {
+            public Rating(JSONObject obj) throws JSONException {
                 provider = RatingProvider.parse(obj.getInt("1"));
                 ratingType = obj.getInt("2");
             }
@@ -111,22 +142,22 @@ public class AppStoreDetails implements Serializable {
     }
 
     public class LocalizedProductDetails implements Serializable {
-        public final Locale locale;
+        public final String locale;
         public final String title;
         public final String shortDescription;
         public final String fullDescription;
-        public final Locale translatedFrom;
+        public final String translatedFrom;
         public final String iconUrl;
         public final String bannerUrl;
         public final ArrayList<Screenshot> screenshots;
 
         public LocalizedProductDetails(JSONObject obj) throws JSONException {
-            locale = Locale.forLanguageTag(obj.getString("1"));
+            locale = obj.getString("1");
             title = obj.getString("2");
             shortDescription = obj.getString("3");
             fullDescription = obj.getString("4");
 
-            if (obj.has("6")) translatedFrom = Locale.forLanguageTag(obj.getString("6"));
+            if (obj.has("6")) translatedFrom = obj.getString("6");
             else translatedFrom = null;
 
             screenshots = new ArrayList<>();
